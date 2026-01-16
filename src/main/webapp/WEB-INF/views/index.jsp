@@ -10,6 +10,9 @@
 <body>
     지도 TEST
     <div id="map" style="width:100%;height:400px;"></div>
+    <div>
+        <a href="/calendar">달력</a>
+    </div>
 <script type="text/javascript">
     var mapOptions = {
         center: new naver.maps.LatLng(37.3595704, 127.105399),
