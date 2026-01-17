@@ -22,6 +22,44 @@
             color: red !important;
             text-decoration: none; /* 밑줄 제거 */
         }
+
+        .main-container {
+            display: flex;          /* 가로 배치를 위한 플렉스 박스 */
+            gap: 20px;              /* 달력과 일정 사이의 간격 */
+            padding: 20px;
+            align-items: flex-start; /* 높이가 달라도 상단 정렬 */
+        }
+
+        #calendar-wrapper {
+            flex: 1;                /* 동일한 비율로 나눔 (50%) */
+        }
+
+        #todo-wrapper {
+            flex: 1;                /* 동일한 비율로 나눔 (50%) */
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            min-height: 500px;      /* 달력 높이와 어느 정도 맞춤 */
+        }
+
+        .todo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #todo-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        #todo-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
     </style>
     <script>
 
@@ -31,8 +69,14 @@
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'ko', // 핵심: 한국어로 설정
-                // 사용자가 달력을 조작(이전/다음/보기변경)할 때마다 실행되는 핵심 이벤트
+                dateClick: function(info) {
+                    console.log('info : ',info);
+                    console.log('info date : ',info.dateStr);
+                    $("#selected-date").text(info.dateStr);
+                },
+                    // 사용자가 달력을 조작(이전/다음/보기변경)할 때마다 실행되는 핵심 이벤트
                 datesSet: function(info) {
+                    console.log('datesSet info : ',info);
                     // 1. 현재 달력의 제목(title)에서 연/월을 가져오는 방법 (예: "2026년 1월")
                     var currentTitle = info.view.title;
 
@@ -43,9 +87,17 @@
                     var year = start.getFullYear(); // 연도 (2026)
                     var month = (start.getMonth() + 1).toString().padStart(2, '0'); // 월 (01)
 
+                    var today = new Date();
+                    var tYear = today.getFullYear();
+                    var tMonth = (today.getMonth() + 1).toString().padStart(2, '0');
                     console.log("변경된 연도: " + year);
                     console.log("변경된 월: " + month);
-
+                    // 이번달인 경우 오늘 날짜로 세팅,그 외 월이 변경되는 경우 매월 1일로 세팅
+                    if (tYear == year && tMonth == month) {
+                        $("#selected-date").text(year + '-' + month + '-' + today.getDate());
+                    } else {
+                        $("#selected-date").text(year + '-' + month + '-' + '01');
+                    }
                     // 💡 여기서 공공데이터 API를 호출하는 함수를 실행하세요!
                     getAnniversaryInfo(year,month);
                 }
@@ -139,6 +191,21 @@
 </head>
 <body>
     달력
-    <div id='calendar'></div>
+    <div class="main-container">
+        <div id="calendar-wrapper">
+            <div id="calendar"></div>
+        </div>
+
+        <div id="todo-wrapper">
+            <div class="todo-header">
+                <h3>오늘의 일정</h3>
+                <span id="selected-date"></span>
+            </div>
+            <hr>
+            <ul id="todo-list">
+                <li>등록된 일정이 없습니다.</li>
+            </ul>
+        </div>
+    </div>
 </body>
 </html>
