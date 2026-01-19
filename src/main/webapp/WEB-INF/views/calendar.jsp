@@ -5,8 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>메인화면</title>
+    <%-- jQuery --%>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <%-- supabase --%>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <%-- 지도 --%>
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=l3zon4bsqx"></script>
+    <%-- 달력 --%>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/ko.global.min.js"></script>
     <style>
@@ -62,6 +67,11 @@
         }
     </style>
     <script>
+
+        // 1. 접속 정보 설정
+        const SUPABASE_URL = 'https://bvukavwhtdgxgwlglenv.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_IWeD_C_wgH1kir6DEzjVtw__Ukkva81';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         document.addEventListener('DOMContentLoaded', function() {
             // 달력 로드
@@ -185,6 +195,63 @@
             };
 
             xhr.send('');
+        }
+
+        function renderScheduleList(data, selectedDate) {
+            console.log('renderScheduleList');
+            const $listContainer = $('#todo-list'); // 어제 만든 리스트 태그
+            $listContainer.empty(); // 기존 리스트 비우기
+
+            if (!data || data.length === 0) {
+                $listContainer.append('<li class="no-data">등록된 일정이 없습니다.</li>');
+                return;
+            }
+
+            console.log('data : ',data);
+
+            // 데이터 반복문 처리
+            data.forEach(item => {
+                const html = `
+            <li class="schedule-item" data-id="${item.v_schedule_id}">
+                <div class="time">${item.start_time || '시간미정'}</div>
+                <div class="title">${item.title}</div>
+            </li>
+        `;
+                $listContainer.append(html);
+            });
+        }
+
+        /**
+         * 특정 날짜의 일정을 Supabase에서 가져오는 함수
+         * @param {string} searchDate - "2026-01-19" 형식
+         */
+        async function fetchDaySchedule(searchDate) {
+            console.log(searchDate + " 의 데이터를 불러오는 중...");
+
+            // 2. 데이터 조회 (Select)
+            const start = searchDate + 'T00:00:00';
+            const end   = searchDate + 'T23:59:59';
+
+            console.log("요청 범위:", start, "~", end);
+
+            const { data, error } = await supabaseClient
+                .from('schedule_mst')
+                .select('*')
+                .gte('d_target_dtm', start) // '2026-01-19T00:00:00'
+                .lte('d_target_dtm', end)   // '2026-01-19T23:59:59'
+                .order('d_target_dtm', { ascending: true });
+
+            if (error) {
+                console.error("데이터 가져오기 에러:", error.message);
+                alert("일정을 불러오는 데 실패했습니다.");
+                return;
+            }
+
+            console.log('data : ',data);
+            console.log('searchDate : ',searchDate);
+
+            // 3. 화면에 데이터 뿌리기 (어제 만든 UI 함수 호출)
+            renderScheduleList(data, searchDate);
         }
 
     </script>
