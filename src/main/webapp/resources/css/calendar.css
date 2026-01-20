@@ -1,0 +1,50 @@
+/* 1. 일요일 날짜 및 텍스트 색상 (빨간색) */
+.fc-day-sun .fc-col-header-cell-cushion, /* 헤더(요일) */
+.fc-day-sun .fc-daygrid-day-number {      /* 날짜 */
+    color: red !important;
+    text-decoration: none; /* 밑줄 제거 */
+}
+/* 2. 토요일 날짜 및 텍스트 색상 (빨간색) */
+.fc-day-sat .fc-col-header-cell-cushion, /* 헤더(요일) */
+.fc-day-sat .fc-daygrid-day-number {      /* 날짜 */
+    color: red !important;
+    text-decoration: none; /* 밑줄 제거 */
+}
+
+.main-container {
+    display: flex;          /* 가로 배치를 위한 플렉스 박스 */
+    gap: 20px;              /* 달력과 일정 사이의 간격 */
+    padding: 20px;
+    align-items: flex-start; /* 높이가 달라도 상단 정렬 */
+}
+
+#calendar-wrapper {
+    flex: 1;                /* 동일한 비율로 나눔 (50%) */
+}
+
+#todo-wrapper {
+    flex: 1;                /* 동일한 비율로 나눔 (50%) */
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    min-height: 500px;      /* 달력 높이와 어느 정도 맞춤 */
+}
+
+.todo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#todo-list {
+    list-style: none;
+    padding: 0;
+}
+
+#todo-list li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}

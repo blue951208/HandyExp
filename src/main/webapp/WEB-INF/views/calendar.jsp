@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>메인화면</title>
+    <link rel="stylesheet" href="/resources/css/calendar.css">
     <%-- jQuery --%>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <%-- supabase --%>
@@ -14,58 +15,6 @@
     <%-- 달력 --%>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/ko.global.min.js"></script>
-    <style>
-        /* 1. 일요일 날짜 및 텍스트 색상 (빨간색) */
-        .fc-day-sun .fc-col-header-cell-cushion, /* 헤더(요일) */
-        .fc-day-sun .fc-daygrid-day-number {      /* 날짜 */
-            color: red !important;
-            text-decoration: none; /* 밑줄 제거 */
-        }
-        /* 2. 토요일 날짜 및 텍스트 색상 (빨간색) */
-        .fc-day-sat .fc-col-header-cell-cushion, /* 헤더(요일) */
-        .fc-day-sat .fc-daygrid-day-number {      /* 날짜 */
-            color: red !important;
-            text-decoration: none; /* 밑줄 제거 */
-        }
-
-        .main-container {
-            display: flex;          /* 가로 배치를 위한 플렉스 박스 */
-            gap: 20px;              /* 달력과 일정 사이의 간격 */
-            padding: 20px;
-            align-items: flex-start; /* 높이가 달라도 상단 정렬 */
-        }
-
-        #calendar-wrapper {
-            flex: 1;                /* 동일한 비율로 나눔 (50%) */
-        }
-
-        #todo-wrapper {
-            flex: 1;                /* 동일한 비율로 나눔 (50%) */
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-            min-height: 500px;      /* 달력 높이와 어느 정도 맞춤 */
-        }
-
-        .todo-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        #todo-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        #todo-list li {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-    </style>
     <script>
 
         // 1. 접속 정보 설정
