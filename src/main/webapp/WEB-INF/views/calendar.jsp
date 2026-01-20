@@ -153,7 +153,7 @@
             // 데이터 반복문 처리
             data.forEach(item => {
                 const html = '<li class="schedule-item" data-id="'+ item.v_schedule_id + '">'
-                           + '  <div class="time">' + item.d_target_dtm + '</div>'
+                           + '  <div class="time">' + formatDateTime(item.d_target_dtm) + '</div>'
                            + '  <div class="title">' + item.v_cont + '</div>'
                            + '</li>';
                 $listContainer.append(html);
@@ -191,6 +191,27 @@
             renderScheduleList(data, searchDate);
         }
 
+        function formatDateTime(isoString) {
+            if (!isoString) return '시간미정';
+
+            // T를 공백으로 바꾸고, 마침표(.) 뒷부분(밀리초)을 제거합니다.
+            // '2026-01-19T06:49:39.781443' -> '2026-01-19 06:49:39'
+            return isoString.replace('T', ' ').split('.')[0];
+        }
+
+        // 모달 열기
+        function openModal(selectedDate) {
+            $('#modalTargetDate').val(selectedDate); // 클릭된 날짜 저장
+            $('#modalTitle').text(selectedDate + ' 새로운 일정');
+            $('#scheduleModal').show();
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            $('#scheduleForm')[0].reset(); // 입력값 초기화
+            $('#scheduleModal').hide();
+        }
+
     </script>
 </head>
 <body>
@@ -202,13 +223,53 @@
 
         <div id="todo-wrapper">
             <div class="todo-header">
-                <h3>오늘의 일정</h3>
-                <span id="selected-date"></span>
+                <div class="header-side">
+                    <h3>오늘의 일정</h3>
+                </div>
+
+                <div class="header-center">
+                    <span id="selected-date"></span>
+                </div>
+
+                <div class="header-side" style="text-align: right;">
+                    <button type="button" class="btn-open-modal" onclick="openModal($('#selected-date').text())">
+                        + 일정 추가
+                    </button>
+                </div>
             </div>
             <hr>
             <ul id="todo-list">
                 <li>등록된 일정이 없습니다.</li>
             </ul>
+        </div>
+    </div>
+
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">새 일정 등록</h3>
+            <hr>
+            <form id="scheduleForm">
+                <input type="hidden" id="modalTargetDate"> <div class="form-group">
+                <label>제목</label>
+                <input type="text" id="v_title" placeholder="일정 제목을 입력하세요" required>
+            </div>
+
+                <div class="form-group">
+                    <label>내용</label>
+                    <textarea id="v_content" rows="4" placeholder="일정 상세 내용을 입력하세요"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>시간 (HH:mm)</label>
+                    <input type="time" id="v_time" value="09:00">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-save" onclick="saveSchedule()">저장하기</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
+                </div>
+            </form>
         </div>
     </div>
 </body>

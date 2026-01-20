@@ -48,3 +48,82 @@
     border-bottom: 1px solid #eee;
     font-size: 14px;
 }
+
+.todo-header {
+    display: flex;
+    justify-content: space-between; /* 영역 간 간격 배분 */
+    align-items: center;            /* 세로축 중앙 정렬 */
+    padding: 10px 0;
+}
+
+/* 좌우 영역을 동일한 비율로 설정 */
+.header-side {
+    flex: 1;
+}
+
+/* 가운데 날짜 영역 */
+.header-center {
+    flex: 1;
+    text-align: center; /* 텍스트 중앙 정렬 */
+}
+
+#selected-date {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #3788d8; /* 강조 색상 */
+    background: #f0f7ff;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.header-side h3 {
+    margin: 0;
+    white-space: nowrap; /* 제목 줄바꿈 방지 */
+}
+
+/* 버튼 스타일 유지 */
+.btn-open-modal {
+    background-color: #3788d8;
+    color: white;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* 모달 배경 */
+.modal {
+    display: none; /* 기본은 숨김 */
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5); /* 반투명 검정 */
+}
+
+/* 모달 박스 */
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.close {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+.form-group input, .form-group textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+
+.modal-footer { text-align: right; margin-top: 20px; }
+.btn-save { background-color: #3788d8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+.btn-cancel { background-color: #aaa; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-left: 5px; cursor: pointer; }
+
