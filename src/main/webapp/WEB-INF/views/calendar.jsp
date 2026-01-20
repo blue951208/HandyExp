@@ -29,19 +29,19 @@
                 initialView: 'dayGridMonth',
                 locale: 'ko', // 핵심: 한국어로 설정
                 dateClick: function(info) {
-                    console.log('info : ',info);
-                    console.log('info date : ',info.dateStr);
                     $("#selected-date").text(info.dateStr);
+                    // 오늘의 일정 가져오기
+                    fetchDaySchedule(info.dateStr);
                 },
                     // 사용자가 달력을 조작(이전/다음/보기변경)할 때마다 실행되는 핵심 이벤트
                 datesSet: function(info) {
-                    console.log('datesSet info : ',info);
                     // 1. 현재 달력의 제목(title)에서 연/월을 가져오는 방법 (예: "2026년 1월")
                     var currentTitle = info.view.title;
 
                     // 2. [추천] 날짜 객체(Date)에서 직접 추출하는 방법
                     // currentStart는 해당 뷰의 시작 날짜를 의미합니다.
                     var start = info.view.currentStart;
+                    console.log('start : ',start);
 
                     var year = start.getFullYear(); // 연도 (2026)
                     var month = (start.getMonth() + 1).toString().padStart(2, '0'); // 월 (01)
@@ -49,16 +49,19 @@
                     var today = new Date();
                     var tYear = today.getFullYear();
                     var tMonth = (today.getMonth() + 1).toString().padStart(2, '0');
-                    console.log("변경된 연도: " + year);
-                    console.log("변경된 월: " + month);
                     // 이번달인 경우 오늘 날짜로 세팅,그 외 월이 변경되는 경우 매월 1일로 세팅
+                    var targetDt = '';
                     if (tYear == year && tMonth == month) {
-                        $("#selected-date").text(year + '-' + month + '-' + today.getDate());
+                        targetDt = year + '-' + month + '-' + today.getDate();
                     } else {
-                        $("#selected-date").text(year + '-' + month + '-' + '01');
+                        targetDt = year + '-' + month + '-' + '01'
                     }
+                    $("#selected-date").text(targetDt)
                     // 💡 여기서 공공데이터 API를 호출하는 함수를 실행하세요!
                     getAnniversaryInfo(year,month);
+
+                    // 오늘의 일정 가져오기
+                    fetchDaySchedule(targetDt);
                 }
             });
             calendar.render();
@@ -110,9 +113,6 @@
                             var html = '<div class="holiday-label" font-size: 12px; padding: 2px;">' + dateName + '</div>';
 
                             // 현재 선택한 년,월에 해당하는 날짜만 노출
-                            console.log('formattedYear : '+formattedYear + '/ selYear : '+selYear);
-                            console.log('formattedMonth : '+formattedMonth + '/ selMonth : '+selMonth);
-
                             if (formattedYear == selYear && formattedMonth == selMonth) {
                                 targetDtTag.find("div.fc-daygrid-day-frame").append(html);
                             }
@@ -124,8 +124,6 @@
                                 $("#calendar").find('td[data-date="'+ formattedDate +'"').css("color", "red !important");
                             }
 
-                            console.log('formattedDate : ',formattedDate);
-
                             // 4. FullCalendar 규격에 맞는 JSON 객체 생성
                             eventList.push({
                                 title: dateName,
@@ -136,9 +134,6 @@
                                 textColor: '#ffffff'
                             });
                         }
-
-                        console.log(eventList);
-
                     }
                 }
             };
@@ -147,7 +142,6 @@
         }
 
         function renderScheduleList(data, selectedDate) {
-            console.log('renderScheduleList');
             const $listContainer = $('#todo-list'); // 어제 만든 리스트 태그
             $listContainer.empty(); // 기존 리스트 비우기
 
@@ -156,16 +150,12 @@
                 return;
             }
 
-            console.log('data : ',data);
-
             // 데이터 반복문 처리
             data.forEach(item => {
-                const html = `
-            <li class="schedule-item" data-id="${item.v_schedule_id}">
-                <div class="time">${item.start_time || '시간미정'}</div>
-                <div class="title">${item.title}</div>
-            </li>
-        `;
+                const html = '<li class="schedule-item" data-id="'+ item.v_schedule_id + '">'
+                           + '  <div class="time">' + item.d_target_dtm + '</div>'
+                           + '  <div class="title">' + item.v_cont + '</div>'
+                           + '</li>';
                 $listContainer.append(html);
             });
         }
@@ -181,7 +171,7 @@
             const start = searchDate + 'T00:00:00';
             const end   = searchDate + 'T23:59:59';
 
-            console.log("요청 범위:", start, "~", end);
+            // console.log("요청 범위:", start, "~", end);
 
             const { data, error } = await supabaseClient
                 .from('schedule_mst')
@@ -195,9 +185,7 @@
                 alert("일정을 불러오는 데 실패했습니다.");
                 return;
             }
-
             console.log('data : ',data);
-            console.log('searchDate : ',searchDate);
 
             // 3. 화면에 데이터 뿌리기 (어제 만든 UI 함수 호출)
             renderScheduleList(data, searchDate);
