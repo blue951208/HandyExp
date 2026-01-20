@@ -212,6 +212,47 @@
             $('#scheduleModal').hide();
         }
 
+
+        // 신규 일정 등록
+        async function saveSchedule() {
+            const content = $('#v_content').val();
+            const date = $('#modalTargetDate').val(); // 예: "2026-01-20"
+            const time = $('#v_time').val();         // 예: "14:30"
+
+            if (!content) {
+                alert("내용을 입력해주세요.");
+                return;
+            }
+
+            console.log('date : '+date + ' time : ' + time);
+
+            // 날짜와 시간을 합쳐서 timestamp 형식 생성
+            const targetDtm = date + ' ' + time + ':00';
+
+            // 저장 버튼 비활성화 (중복 클릭 방지)
+            $('.btn-save').prop('disabled', true).text('저장 중...');
+
+            const { data, error } = await supabaseClient
+                .from('schedule_mst')
+                .insert([
+                    {
+                        v_cont: content,
+                        d_target_dtm: targetDtm
+                    }
+                ]);
+
+            if (error) {
+                console.error("저장 실패:", error.message);
+                alert("저장에 실패했습니다: " + error.message);
+                $('.btn-save').prop('disabled', false).text('저장하기');
+            } else {
+                alert("일정이 등록되었습니다.");
+                closeModal();
+                // 리스트 새로고침
+                fetchDaySchedule(date);
+            }
+        }
+
     </script>
 </head>
 <body>
@@ -250,10 +291,11 @@
             <h3 id="modalTitle">새 일정 등록</h3>
             <hr>
             <form id="scheduleForm">
-                <input type="hidden" id="modalTargetDate"> <div class="form-group">
-                <label>제목</label>
-                <input type="text" id="v_title" placeholder="일정 제목을 입력하세요" required>
-            </div>
+                <input type="hidden" id="modalTargetDate">
+<%--                <div class="form-group">--%>
+<%--                    <label>제목</label>--%>
+<%--                    <input type="text" id="v_title" placeholder="일정 제목을 입력하세요" required>--%>
+<%--                </div>--%>
 
                 <div class="form-group">
                     <label>내용</label>
