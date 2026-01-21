@@ -152,9 +152,16 @@
 
             // 데이터 반복문 처리
             data.forEach(item => {
+                var timeDisplay = item.d_target_dtm ? item.d_target_dtm.substring(11, 16) : '--:--';
                 const html = '<li class="schedule-item" data-id="'+ item.v_schedule_id + '">'
-                           + '  <div class="time">' + formatDateTime(item.d_target_dtm) + '</div>'
-                           + '  <div class="title">' + item.v_cont + '</div>'
+                           + '  <div class="schedule-info">'
+                           + '    <div class="time-badge">' + formatDateTime(item.d_target_dtm) + '</div>'
+                           + '    <div class="schedule-content">' + item.v_cont + '</div>'
+                           + '  </div>'
+                           + '  <div class="schedule-btns">'
+                    + '    <button type="button" class="btn-edit" onclick="openEditModal(\'' + item.v_schedule_id + '\', \'' + item.v_cont + '\', \'' + selectedDate + '\', \'' + timeDisplay + '\')">수정</button>'
+                    + '    <button type="button" class="btn-delete" onclick="deleteSchedule(\'' + item.v_schedule_id + '\', \'' + selectedDate + '\')">삭제</button>'
+                           + '  </div>'
                            + '</li>';
                 $listContainer.append(html);
             });
@@ -253,6 +260,60 @@
             }
         }
 
+        async function deleteSchedule(id, selectedDate) {
+            if (!confirm("이 일정을 정말 삭제하시겠습니까?")) return;
+
+            const { error } = await supabaseClient
+                .from('schedule_mst')
+                .delete()
+                .eq('v_schedule_id', id); // 고유 ID로 매칭
+
+            if (error) {
+                alert("삭제에 실패했습니다: " + error.message);
+            } else {
+                alert("삭제되었습니다.");
+                fetchDaySchedule(selectedDate); // 리스트 새로고침
+            }
+        }
+
+        // 수정을 위한 모달 열기
+        function openEditModal(id, content, date, time) {
+            $('#modalTitle').text(date + " 일정 수정");
+            $('#v_content').val(content);
+            $('#modalTargetDate').val(date);
+            $('#v_time').val(time);
+
+            // 저장 버튼의 onclick 속성을 수정 함수로 변경하거나, id를 hidden에 보관
+            $('#modalScheduleId').val(id); // 수정용 hidden input 하나 추가 필요
+
+            // 저장 버튼 텍스트 변경
+            $('.btn-save').attr('onclick', 'updateSchedule()').text('수정 완료');
+
+            $('#scheduleModal').fadeIn(200);
+        }
+
+        // 실제 수정 요청
+        async function updateSchedule() {
+            const id = $('#modalScheduleId').val();
+            const content = $('#v_content').val();
+            const date = $('#modalTargetDate').val();
+            const time = $('#v_time').val();
+            const targetDtm = date + ' ' + time + ':00';
+
+            const { error } = await supabaseClient
+                .from('schedule_mst')
+                .update({ v_cont: content, d_target_dtm: targetDtm })
+                .eq('v_schedule_id', id);
+
+            if (error) {
+                alert("수정에 실패했습니다.");
+            } else {
+                alert("수정되었습니다.");
+                closeModal();
+                fetchDaySchedule(date);
+            }
+        }
+
     </script>
 </head>
 <body>
@@ -291,6 +352,7 @@
             <h3 id="modalTitle">새 일정 등록</h3>
             <hr>
             <form id="scheduleForm">
+                <input type="hidden" id="modalScheduleId" />
                 <input type="hidden" id="modalTargetDate">
 <%--                <div class="form-group">--%>
 <%--                    <label>제목</label>--%>

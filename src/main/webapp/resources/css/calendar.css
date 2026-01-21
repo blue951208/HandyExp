@@ -127,3 +127,32 @@
 .btn-save { background-color: #3788d8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
 .btn-cancel { background-color: #aaa; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-left: 5px; cursor: pointer; }
 
+.schedule-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.schedule-item:hover { background: #fcfcfc; }
+
+.schedule-info { display: flex; align-items: center; gap: 10px; flex: 1; }
+
+.schedule-btns { display: flex; gap: 5px; margin-left: 10px; }
+
+/* 수정/삭제 버튼 스타일 */
+.btn-edit, .btn-delete {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.btn-edit { background-color: #f0f0f0; color: #333; }
+.btn-delete { background-color: #ffeded; color: #e91e63; }
+
+.btn-edit:hover { background-color: #e0e0e0; }
+.btn-delete:hover { background-color: #f8d7da; }
