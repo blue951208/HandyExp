@@ -187,3 +187,28 @@
 
 .btn-edit:hover { background-color: #e0e0e0; }
 .btn-delete:hover { background-color: #f8d7da; }
+
+/* 캘린더 내부 이벤트(제목) 스타일 */
+.fc-event {
+    cursor: pointer;
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-bottom: 1px !important; /* 일정 간 간격 */
+}
+
+.fc-event-title {
+    font-size: 0.75rem !important; /* 글자 크기 축소 (기본보다 작게) */
+    font-weight: normal !important;
+
+    /* 말줄임표(...) 핵심 설정 */
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 시간이 표시되는 경우(있는 경우만) 크기 조절 */
+.fc-event-time {
+    font-size: 0.7rem !important;
+    font-weight: bold;
+}

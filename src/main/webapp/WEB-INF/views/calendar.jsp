@@ -22,12 +22,16 @@
         const SUPABASE_KEY = 'sb_publishable_IWeD_C_wgH1kir6DEzjVtw__Ukkva81';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let calendar = null;
+
         document.addEventListener('DOMContentLoaded', function() {
             // 달력 로드
             var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'ko', // 핵심: 한국어로 설정
+                dayMaxEvents: true,      // 해당 날짜 칸을 넘어가면 "+N 더보기"로 표시
+                eventDisplay: 'block',    // 이벤트를 블록 형태로 꽉 차게 표시 (말줄임표 적용에 유리)
                 dateClick: function(info) {
                     $("#selected-date").text(info.dateStr);
                     // 오늘의 일정 가져오기
@@ -57,11 +61,18 @@
                         targetDt = year + '-' + month + '-' + '01'
                     }
                     $("#selected-date").text(targetDt)
+
+                    // 기존 이벤트 제거 (필요 시)
+                    calendar.removeAllEvents();
+
                     // 💡 여기서 공공데이터 API를 호출하는 함수를 실행하세요!
                     getAnniversaryInfo(year,month);
 
                     // 오늘의 일정 가져오기
                     fetchDaySchedule(targetDt);
+
+                    // 이달의 일정 가져오기
+                    fetchMonthSchedules(year, month);
                 }
             });
             calendar.render();
@@ -91,8 +102,6 @@
                         const items = xmlDoc.getElementsByTagName("item");
                         const eventList = [];
 
-                        $('#calendar').find('.holiday-label').remove();
-
                         for (let i = 0; i < items.length; i++) {
                             const item = items[i];
 
@@ -109,36 +118,69 @@
 
                             const formattedDate = formattedYear + '-' + formattedMonth + '-' + formattedDay;
 
-                            var targetDtTag = $("#calendar").find('td[data-date="'+ formattedDate +'"');
-                            var html = '<div class="holiday-label" font-size: 12px; padding: 2px;">' + dateName + '</div>';
-
-                            // 현재 선택한 년,월에 해당하는 날짜만 노출
-                            if (formattedYear == selYear && formattedMonth == selMonth) {
-                                targetDtTag.find("div.fc-daygrid-day-frame").append(html);
-                            }
-                            // 주말인 경우 제외, 휴일이 아닌 경우 제외
-                            if (targetDtTag.hasClass("fc-day-sat") || targetDtTag.hasClass("fc-day-sun")
-                                || isHoliday === "N") {
-
-                            } else {
-                                $("#calendar").find('td[data-date="'+ formattedDate +'"').css("color", "red !important");
-                            }
-
-                            // 4. FullCalendar 규격에 맞는 JSON 객체 생성
-                            eventList.push({
+                            // 3. FullCalendar 이벤트로 추가
+                            calendar.addEvent({
+                                id: 'holiday-' + locdate, // 중복 방지용 ID
                                 title: dateName,
                                 start: formattedDate,
                                 allDay: true,
-                                // 휴일 여부에 따른 색상 지정 (기획적 디테일)
-                                color: isHoliday === 'Y' ? '#ff0000' : '#888888',
-                                textColor: '#ffffff'
+
+                                // 공휴일 전용 스타일 설정
+                                backgroundColor: 'transparent', // 배경은 투명하게 (글자만 보이게)
+                                borderColor: 'transparent',
+                                textColor: '#e91e63',           // 휴일은 핑크/레드 계열
+                                className: 'holiday-event',     // CSS 제어를 위한 클래스 추가
+
+                                // 커스텀 데이터 (필요 시)
+                                extendedProps: {
+                                    isHoliday: isHoliday
+                                }
                             });
+
                         }
                     }
                 }
             };
 
             xhr.send('');
+        }
+
+        async function fetchMonthSchedules(year, month) {
+            const lastDay = new Date(year, month, 0).getDate();
+
+            // 시작일: 2026-01-01 00:00:00
+            // 종료일: 2026-01-31 23:59:59
+            const startDate = year + '-' + String(month).padStart(2, '0') + '-' + '01 00:00:00';
+            const endDate   = year + '-' + String(month).padStart(2, '0') + '-' + lastDay + ' 23:59:59';
+
+            const { data, error } = await supabaseClient
+                .from('schedule_mst')
+                .select('*')
+                .gte('d_target_dtm', startDate)
+                .lte('d_target_dtm', endDate)
+                .order('d_target_dtm', { ascending: true });
+
+            console.log('fetchMonthSchedules data : ',data);
+
+            if (error) {
+                console.error("월간 조회 실패:", error);
+            } else {
+                // 이 데이터를 FullCalendar에 뿌려주면 됩니다!
+                renderCalendarEvents(data);
+            }
+        }
+
+        function renderCalendarEvents(data) {
+            data.forEach(item => {
+                calendar.addEvent({
+                    id: item.v_schedule_id,
+                    title: item.v_title,      // 날짜 칸에 보일 텍스트
+                    start: item.d_target_dtm, // YYYY-MM-DD 형식 포함 시 자동 배치
+                    allDay: true,             // 시간 정보 무시하고 칸 전체에 표시할지 여부
+                    backgroundColor: '#3788d8', // 일정 색상 커스텀
+                    borderColor: '#3788d8'
+                });
+            });
         }
 
         function renderScheduleList(data, selectedDate) {
