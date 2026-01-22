@@ -154,13 +154,18 @@
             data.forEach(item => {
                 var timeDisplay = item.d_target_dtm ? item.d_target_dtm.substring(11, 16) : '--:--';
                 const html = '<li class="schedule-item" data-id="'+ item.v_schedule_id + '">'
-                           + '  <div class="schedule-info">'
-                           + '    <div class="time-badge">' + formatDateTime(item.d_target_dtm) + '</div>'
-                           + '    <div class="schedule-content">' + item.v_cont + '</div>'
+                           + '  <div class="schedule-info-wrapper">'
+                           + '    <div class="schedule-header">'
+                           + '      <span class="time-badge">' + formatDateTime(item.d_target_dtm) + '</span>'
+                           + '      <span class="schedule-title">' + (item.v_title || '제목 없음') + '</span>'
+                           + '    </div>'
+                           + '    <div class="schedule-body">'
+                           + '      <p class="schedule-content">' + (item.v_cont || '') + '</p>'
+                           + '    </div>'
                            + '  </div>'
                            + '  <div class="schedule-btns">'
-                    + '    <button type="button" class="btn-edit" onclick="openEditModal(\'' + item.v_schedule_id + '\', \'' + item.v_cont + '\', \'' + selectedDate + '\', \'' + timeDisplay + '\')">수정</button>'
-                    + '    <button type="button" class="btn-delete" onclick="deleteSchedule(\'' + item.v_schedule_id + '\', \'' + selectedDate + '\')">삭제</button>'
+                           + '    <button type="button" class="btn-edit" onclick="openEditModal(\'' + item.v_schedule_id + '\', \'' + item.v_title + '\', \'' + item.v_cont + '\', \'' + selectedDate + '\', \'' + timeDisplay + '\')">수정</button>'
+                           + '    <button type="button" class="btn-delete" onclick="deleteSchedule(\'' + item.v_schedule_id + '\', \'' + selectedDate + '\')">삭제</button>'
                            + '  </div>'
                            + '</li>';
                 $listContainer.append(html);
@@ -222,6 +227,7 @@
 
         // 신규 일정 등록
         async function saveSchedule() {
+            const title = $('#v_title').val();
             const content = $('#v_content').val();
             const date = $('#modalTargetDate').val(); // 예: "2026-01-20"
             const time = $('#v_time').val();         // 예: "14:30"
@@ -243,8 +249,9 @@
                 .from('schedule_mst')
                 .insert([
                     {
-                        v_cont: content,
-                        d_target_dtm: targetDtm
+                        v_title      : title
+                      , v_cont       : content
+                      , d_target_dtm : targetDtm
                     }
                 ]);
 
@@ -277,8 +284,9 @@
         }
 
         // 수정을 위한 모달 열기
-        function openEditModal(id, content, date, time) {
+        function openEditModal(id, title, content, date, time) {
             $('#modalTitle').text(date + " 일정 수정");
+            $('#v_title').val(title);
             $('#v_content').val(content);
             $('#modalTargetDate').val(date);
             $('#v_time').val(time);
@@ -295,6 +303,7 @@
         // 실제 수정 요청
         async function updateSchedule() {
             const id = $('#modalScheduleId').val();
+            const title = $('#v_title').val();
             const content = $('#v_content').val();
             const date = $('#modalTargetDate').val();
             const time = $('#v_time').val();
@@ -302,7 +311,7 @@
 
             const { error } = await supabaseClient
                 .from('schedule_mst')
-                .update({ v_cont: content, d_target_dtm: targetDtm })
+                .update({ v_cont: content, v_title: title, d_target_dtm: targetDtm })
                 .eq('v_schedule_id', id);
 
             if (error) {
@@ -354,10 +363,10 @@
             <form id="scheduleForm">
                 <input type="hidden" id="modalScheduleId" />
                 <input type="hidden" id="modalTargetDate">
-<%--                <div class="form-group">--%>
-<%--                    <label>제목</label>--%>
-<%--                    <input type="text" id="v_title" placeholder="일정 제목을 입력하세요" required>--%>
-<%--                </div>--%>
+                <div class="form-group">
+                    <label>제목</label>
+                    <input type="text" id="v_title" placeholder="일정 제목을 입력하세요" required>
+                </div>
 
                 <div class="form-group">
                     <label>내용</label>
