@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.handy.mapper.ScheduleMstMapper">
+
+    <select id="selectScheduleMstList" parameterType="map" resultType="org.handy.dto.ScheduleMstDto">
+        SELECT v_schedule_id
+             , v_title
+             , v_cont
+             , TO_CHAR(d_target_dtm, 'YYYY-MM-DD HH24:MI:SS') as d_target_dtm
+          FROM schedule_mst
+         WHERE v_flag_del = 'N'
+       <if test="selectedDate != null and selectedDate != ''">
+           AND TO_CHAR(d_target_dtm, 'YYYY-MM-DD') = #{selectedDate}
+       </if>
+         ORDER BY d_target_dtm DESC
+    </select>
+
+</mapper>
