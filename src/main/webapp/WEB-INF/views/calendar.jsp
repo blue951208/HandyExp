@@ -287,26 +287,52 @@
             // 저장 버튼 비활성화 (중복 클릭 방지)
             $('.btn-save').prop('disabled', true).text('저장 중...');
 
-            const { data, error } = await supabaseClient
-                .from('schedule_mst')
-                .insert([
-                    {
-                        v_title      : title
-                      , v_cont       : content
-                      , d_target_dtm : targetDtm
-                    }
-                ]);
-
-            if (error) {
-                console.error("저장 실패:", error.message);
-                alert("저장에 실패했습니다: " + error.message);
-                $('.btn-save').prop('disabled', false).text('저장하기');
-            } else {
-                alert("일정이 등록되었습니다.");
-                closeModal();
-                // 리스트 새로고침
-                fetchDaySchedule(date);
+            var formData = {
+                  vTitle     : title
+                , vCont      : content
+                , dTargetDtm : targetDtm
             }
+
+            $.ajax({
+                url: '/calendar/insertScheduleMst', // 클래스 경로(/calendar) 포함 확인!
+                type: 'POST',
+                data: formData, // JSON이 아닌 일반 파라미터 형태로 전송
+                success: function(res) {
+                    if(res.status === "success") {
+                        alert(res.message);
+                        // location.reload(); // 성공 시 화면 갱신 (또는 목록만 다시 불러오기)
+                        closeModal();
+                        // 리스트 새로고침
+                        fetchDaySchedule(date);
+                    } else {
+                        alert(res.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("서버 통신 중 에러가 발생했습니다.");
+                }
+            });
+
+            // const { data, error } = await supabaseClient
+            //     .from('schedule_mst')
+            //     .insert([
+            //         {
+            //             v_title      : title
+            //           , v_cont       : content
+            //           , d_target_dtm : targetDtm
+            //         }
+            //     ]);
+            //
+            // if (error) {
+            //     console.error("저장 실패:", error.message);
+            //     alert("저장에 실패했습니다: " + error.message);
+            //     $('.btn-save').prop('disabled', false).text('저장하기');
+            // } else {
+            //     alert("일정이 등록되었습니다.");
+            //     closeModal();
+            //     // 리스트 새로고침
+            //     fetchDaySchedule(date);
+            // }
         }
 
         async function deleteSchedule(id, selectedDate) {
