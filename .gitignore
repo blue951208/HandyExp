@@ -40,3 +40,6 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# Git Toolbox Plugin settings
+git_toolbox_prj.xml
