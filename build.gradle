@@ -17,6 +17,12 @@ dependencies {
     implementation("org.springframework:spring-jdbc:5.3.31") // MyBatis 연동 필수
     implementation("org.springframework:spring-tx:5.3.31")
 
+    // Spring Data JPA
+    implementation("org.springframework.data:spring-data-jpa:2.7.18")
+
+    // Hibernate (JPA 구현체)
+    implementation("org.hibernate:hibernate-entitymanager:5.6.15.Final")
+
     // 2. PostgreSQL 드라이버
     implementation("org.postgresql:postgresql:42.6.0")
 
