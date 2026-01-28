@@ -300,7 +300,12 @@
                 success: function(res) {
                     if(res.status === "success") {
                         alert(res.message);
-                        // location.reload(); // 성공 시 화면 갱신 (또는 목록만 다시 불러오기)
+                        // 1. 현재 캘린더의 모든 소스를 제거
+                        calendar.removeAllEvents();
+                        // 이달의 일정 가져오기
+                        const dateSplit = date.split('-');
+                        fetchMonthSchedules(dateSplit[0], dateSplit[1]);
+
                         closeModal();
                         // 리스트 새로고침
                         fetchDaySchedule(date);
@@ -338,17 +343,40 @@
         async function deleteSchedule(id, selectedDate) {
             if (!confirm("이 일정을 정말 삭제하시겠습니까?")) return;
 
-            const { error } = await supabaseClient
-                .from('schedule_mst')
-                .delete()
-                .eq('v_schedule_id', id); // 고유 ID로 매칭
+            $.ajax({
+                url: '/calendar/deleteScheduleMst',
+                type: 'POST',
+                data: { scheduleId: id }, // Key 이름을 컨트롤러와 맞춰주세요!
+                success: function(res) {
+                    if(res.status === "success") {
+                        alert("삭제되었습니다.");
+                        // 1. 현재 캘린더의 모든 소스를 제거
+                        calendar.removeAllEvents();
+                        // 이달의 일정 가져오기
+                        const dateSplit = selectedDate.split('-');
+                        fetchMonthSchedules(dateSplit[0], dateSplit[1]);
+                        fetchDaySchedule(selectedDate); // 리스트 새로고침
+                    } else {
+                        alert(res.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("서버 통신 중 에러가 발생했습니다.");
+                }
 
-            if (error) {
-                alert("삭제에 실패했습니다: " + error.message);
-            } else {
-                alert("삭제되었습니다.");
-                fetchDaySchedule(selectedDate); // 리스트 새로고침
-            }
+            });
+
+            // const { error } = await supabaseClient
+            //     .from('schedule_mst')
+            //     .delete()
+            //     .eq('v_schedule_id', id); // 고유 ID로 매칭
+            //
+            // if (error) {
+            //     alert("삭제에 실패했습니다: " + error.message);
+            // } else {
+            //     alert("삭제되었습니다.");
+            //     fetchDaySchedule(selectedDate); // 리스트 새로고침
+            // }
         }
 
         // 수정을 위한 모달 열기
@@ -377,18 +405,49 @@
             const time = $('#v_time').val();
             const targetDtm = date + ' ' + time + ':00';
 
-            const { error } = await supabaseClient
-                .from('schedule_mst')
-                .update({ v_cont: content, v_title: title, d_target_dtm: targetDtm })
-                .eq('v_schedule_id', id);
+            $.ajax({
+                url: '/calendar/updateScheduleMst',
+                type: 'POST',
+                data: {
+                    vScheduleId: id
+                  , vCont: content
+                  , vTitle: title
+                  , dTargetDtm: targetDtm
+                },
+                success: function(res) {
+                    if(res.status === "success") {
+                        alert("수정되었습니다.");
 
-            if (error) {
-                alert("수정에 실패했습니다.");
-            } else {
-                alert("수정되었습니다.");
-                closeModal();
-                fetchDaySchedule(date);
-            }
+                        // 1. 현재 캘린더의 모든 소스를 제거
+                        calendar.removeAllEvents();
+                        // 이달의 일정 가져오기
+                        const dateSplit = date.split('-');
+                        fetchMonthSchedules(dateSplit[0], dateSplit[1]);
+
+                        closeModal();
+                        fetchDaySchedule(date);
+                    } else {
+                        alert(res.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("서버 통신 중 에러가 발생했습니다.");
+                }
+
+            });
+
+            // const { error } = await supabaseClient
+            //     .from('schedule_mst')
+            //     .update({ v_cont: content, v_title: title, d_target_dtm: targetDtm })
+            //     .eq('v_schedule_id', id);
+            //
+            // if (error) {
+            //     alert("수정에 실패했습니다.");
+            // } else {
+            //     alert("수정되었습니다.");
+            //     closeModal();
+            //     fetchDaySchedule(date);
+            // }
         }
 
     </script>
