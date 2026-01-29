@@ -10,9 +10,16 @@
              , TO_CHAR(d_target_dtm, 'YYYY-MM-DD HH24:MI:SS') as d_target_dtm
           FROM schedule_mst
          WHERE v_flag_del = 'N'
-       <if test="selectedDate != null and selectedDate != ''">
-           AND TO_CHAR(d_target_dtm, 'YYYY-MM-DD') = #{selectedDate}
-       </if>
+        <if test="selType != null and selType != ''">
+            <choose>
+                <when test="selType == 'month' and selectedDate != null and selectedDate != ''">
+                    AND TO_CHAR(d_target_dtm, 'YYYY-MM') = #{selectedDate}
+                </when>
+                <when test="selType == 'day' and selectedDate != null and selectedDate != ''">
+                    AND TO_CHAR(d_target_dtm, 'YYYY-MM-DD') = #{selectedDate}
+                </when>
+            </choose>
+        </if>
          ORDER BY d_target_dtm DESC
     </select>
 

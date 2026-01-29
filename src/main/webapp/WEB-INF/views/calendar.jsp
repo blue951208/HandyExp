@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -72,7 +74,17 @@
                     fetchDaySchedule(targetDt);
 
                     // 이달의 일정 가져오기
-                    fetchMonthSchedules(year, month);
+                    // fetchMonthSchedules(year, month);
+                    const eventData = [
+                        <c:forEach var="item" items="${monthList}" varStatus="status">
+                        {
+                            v_schedule_id: "${item.VScheduleId}",
+                            v_title: "${item.VTitle}",     // DTO 필드명에 맞춰 수정
+                            d_target_dtm: "${item.DTargetDtm}" // 'YYYY-MM-DD' 형식 문자열
+                        }${!status.last ? ',' : ''}
+                        </c:forEach>
+                    ];
+                    renderCalendarEvents(eventData);
                 }
             });
             calendar.render();
@@ -242,7 +254,7 @@
             console.log('data : ',data);
 
             // 3. 화면에 데이터 뿌리기 (어제 만든 UI 함수 호출)
-            renderScheduleList(data, searchDate);
+            // renderScheduleList(data, searchDate);
         }
 
         function formatDateTime(isoString) {
@@ -477,7 +489,31 @@
             </div>
             <hr>
             <ul id="todo-list">
-                <li>등록된 일정이 없습니다.</li>
+                <c:choose>
+                    <c:when test="${not empty dayList}">
+                        <c:forEach items="${dayList}" var="day">
+                            ${day}
+                            <li class="schedule-item" data-id="${day.VScheduleId}">
+                                <div class="schedule-info-wrapper">
+                                    <div class="schedule-header">
+                                        <span class="time-badge">${fn:substring(day.DTargetDtm, 11, 16)}</span>
+                                        <span class="schedule-title">${day.VTitle}</span>
+                                    </div>
+                                    <div class="schedule-body">
+                                        <p class="schedule-content">${day.VCont}</p>
+                                    </div>
+                                </div>
+                                <div class="schedule-btns">
+                                    <button type="button" class="btn-edit" onclick="openEditModal('${day.VScheduleId}', '${day.VTitle}', '${day.VCont}', '${fn:substring(day.DTargetDtm, 0, 10)}', '${fn:substring(day.DTargetDtm, 11, 16)}')">수정</button>
+                                    <button type="button" class="btn-delete" onclick="deleteSchedule('${day.VScheduleId}', '${fn:substring(day.DTargetDtm, 0, 10)}')">삭제</button>
+                                </div>
+                            </li>
+                        </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <li>등록된 일정이 없습니다.</li>
+                    </c:otherwise>
+                </c:choose>
             </ul>
         </div>
     </div>

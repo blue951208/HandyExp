@@ -23,6 +23,7 @@ public class ScheduleMstServiceImpl implements ScheduleMstService {
     @Autowired
     private ScheduleMstRepository scheduleMstRepository;
 
+    @Override
     public List<ScheduleMstDto> selectScheduleMstList(Map<String, Object> param) {
         return scheduleMstMapper.selectScheduleMstList(param);
     }

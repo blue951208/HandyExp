@@ -40,6 +40,9 @@ dependencies {
     // 6. JSON 응답을 위한 Jackson (Controller에서 List 반환 시 필수)
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
 
+// Tomcat 9 이하 환경에서는 이 라이브러리 하나면 충분합니다.
+    implementation 'javax.servlet:jstl:1.2'
+
     // 테스트
     testImplementation("org.springframework:spring-test:5.3.31")
     testImplementation("junit:junit:4.12")

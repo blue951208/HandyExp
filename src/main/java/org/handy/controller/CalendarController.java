@@ -4,12 +4,11 @@ import org.handy.dto.ScheduleMstDto;
 import org.handy.service.impl.ScheduleMstServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,34 @@ public class CalendarController {
 
         System.out.println("CalendarController.calendar()");
         Map<String, Object> param = new HashMap<>();
-        List<ScheduleMstDto> list = scheduleMstService.selectScheduleMstList(param);
-        System.out.println("list : " + list);
+        // 오늘 날짜
+        LocalDate now = LocalDate.now();
+
+        // 이달의 일정
+        param.put("selType", "month");
+        param.put("selectedDate", now.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+        List<ScheduleMstDto> monthList = scheduleMstService.selectScheduleMstList(param);
+        mav.addObject("monthList", monthList);
+
+        param.put("selType", "day");
+        param.put("selectedDate", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        List<ScheduleMstDto> dayList = scheduleMstService.selectScheduleMstList(param);
+        mav.addObject("dayList", dayList);
         return mav;
+    }
+
+    @GetMapping("/selectScheduleMstAjax")
+    @ResponseBody
+    public Map<String, Object> selectScheduleMstAjax(Map<String, Object> params) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
     @PostMapping("/insertScheduleMst")
