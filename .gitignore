@@ -43,3 +43,5 @@ bin/
 
 # Git Toolbox Plugin settings
 git_toolbox_prj.xml
+
+.idea/artifacts/
