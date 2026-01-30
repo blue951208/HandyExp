@@ -46,13 +46,16 @@ public class CalendarController {
 
     @GetMapping("/selectScheduleMstAjax")
     @ResponseBody
-    public Map<String, Object> selectScheduleMstAjax(Map<String, Object> params) {
+    public Map<String, Object> selectScheduleMstAjax(@RequestParam Map<String, Object> params) {
         Map<String, Object> result = new HashMap<>();
 
         try {
-
+            List<ScheduleMstDto> list = scheduleMstService.selectScheduleMstList(params);
+            result.put("status", "success");
+            result.put("scheduleList", list);
         } catch (Exception e) {
             e.printStackTrace();
+            result.put("status", "fail");
         }
 
         return result;

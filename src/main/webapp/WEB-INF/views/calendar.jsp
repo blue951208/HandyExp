@@ -74,17 +74,17 @@
                     fetchDaySchedule(targetDt);
 
                     // 이달의 일정 가져오기
-                    // fetchMonthSchedules(year, month);
-                    const eventData = [
-                        <c:forEach var="item" items="${monthList}" varStatus="status">
-                        {
-                            v_schedule_id: "${item.VScheduleId}",
-                            v_title: "${item.VTitle}",     // DTO 필드명에 맞춰 수정
-                            d_target_dtm: "${item.DTargetDtm}" // 'YYYY-MM-DD' 형식 문자열
-                        }${!status.last ? ',' : ''}
-                        </c:forEach>
-                    ];
-                    renderCalendarEvents(eventData);
+                    fetchMonthSchedules(year, month);
+                    <%--const eventData = [--%>
+                    <%--    <c:forEach var="item" items="${monthList}" varStatus="status">--%>
+                    <%--    {--%>
+                    <%--        v_schedule_id: "${item.VScheduleId}",--%>
+                    <%--        v_title: "${item.VTitle}",     // DTO 필드명에 맞춰 수정--%>
+                    <%--        d_target_dtm: "${item.DTargetDtm}" // 'YYYY-MM-DD' 형식 문자열--%>
+                    <%--    }${!status.last ? ',' : ''}--%>
+                    <%--    </c:forEach>--%>
+                    <%--];--%>
+                    <%--renderCalendarEvents(eventData);--%>
                 }
             });
             calendar.render();
@@ -158,36 +158,60 @@
         }
 
         async function fetchMonthSchedules(year, month) {
+            console.log('fetchMonthSchedules');
             const lastDay = new Date(year, month, 0).getDate();
 
             // 시작일: 2026-01-01 00:00:00
             // 종료일: 2026-01-31 23:59:59
-            const startDate = year + '-' + String(month).padStart(2, '0') + '-' + '01 00:00:00';
+            const targetMonth = year + '-' + String(month).padStart(2, '0');
             const endDate   = year + '-' + String(month).padStart(2, '0') + '-' + lastDay + ' 23:59:59';
 
-            const { data, error } = await supabaseClient
-                .from('schedule_mst')
-                .select('*')
-                .gte('d_target_dtm', startDate)
-                .lte('d_target_dtm', endDate)
-                .order('d_target_dtm', { ascending: true });
-
-            console.log('fetchMonthSchedules data : ',data);
-
-            if (error) {
-                console.error("월간 조회 실패:", error);
-            } else {
-                // 이 데이터를 FullCalendar에 뿌려주면 됩니다!
-                renderCalendarEvents(data);
+            var formData = {
+                  selType      : 'month'
+                , selectedDate : targetMonth
             }
+
+            $.ajax({
+                url: '/calendar/selectScheduleMstAjax', // 클래스 경로(/calendar) 포함 확인!
+                type: 'GET',
+                data: formData, // JSON이 아닌 일반 파라미터 형태로 전송
+                success: function(res) {
+                    console.log('res : ',res);
+                    if(res.status === "success") {
+                        // 이 데이터를 FullCalendar에 뿌려주면 됩니다!
+                        renderCalendarEvents(res.scheduleList);
+                    } else {
+                        alert(res.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("서버 통신 중 에러가 발생했습니다.");
+                }
+            });
+
+            // const { data, error } = await supabaseClient
+            //     .from('schedule_mst')
+            //     .select('*')
+            //     .gte('d_target_dtm', startDate)
+            //     .lte('d_target_dtm', endDate)
+            //     .order('d_target_dtm', { ascending: true });
+            //
+            // console.log('fetchMonthSchedules data : ',data);
+            //
+            // if (error) {
+            //     console.error("월간 조회 실패:", error);
+            // } else {
+            //     // 이 데이터를 FullCalendar에 뿌려주면 됩니다!
+            //     renderCalendarEvents(data);
+            // }
         }
 
         function renderCalendarEvents(data) {
             data.forEach(item => {
                 calendar.addEvent({
-                    id: item.v_schedule_id,
-                    title: item.v_title,      // 날짜 칸에 보일 텍스트
-                    start: item.d_target_dtm, // YYYY-MM-DD 형식 포함 시 자동 배치
+                    id: item.vscheduleId,
+                    title: item.vtitle,      // 날짜 칸에 보일 텍스트
+                    start: item.dtargetDtm, // YYYY-MM-DD 형식 포함 시 자동 배치
                     allDay: true,             // 시간 정보 무시하고 칸 전체에 표시할지 여부
                     backgroundColor: '#3788d8', // 일정 색상 커스텀
                     borderColor: '#3788d8'
@@ -206,20 +230,20 @@
 
             // 데이터 반복문 처리
             data.forEach(item => {
-                var timeDisplay = item.d_target_dtm ? item.d_target_dtm.substring(11, 16) : '--:--';
-                const html = '<li class="schedule-item" data-id="'+ item.v_schedule_id + '">'
+                var timeDisplay = item.dtargetDtm ? item.dtargetDtm.substring(11, 16) : '--:--';
+                const html = '<li class="schedule-item" data-id="'+ item.vscheduleId + '">'
                            + '  <div class="schedule-info-wrapper">'
                            + '    <div class="schedule-header">'
-                           + '      <span class="time-badge">' + formatDateTime(item.d_target_dtm) + '</span>'
-                           + '      <span class="schedule-title">' + (item.v_title || '제목 없음') + '</span>'
+                           + '      <span class="time-badge">' + formatDateTime(item.dtargetDtm) + '</span>'
+                           + '      <span class="schedule-title">' + (item.vtitle || '제목 없음') + '</span>'
                            + '    </div>'
                            + '    <div class="schedule-body">'
-                           + '      <p class="schedule-content">' + (item.v_cont || '') + '</p>'
+                           + '      <p class="schedule-content">' + (item.vcont || '') + '</p>'
                            + '    </div>'
                            + '  </div>'
                            + '  <div class="schedule-btns">'
-                           + '    <button type="button" class="btn-edit" onclick="openEditModal(\'' + item.v_schedule_id + '\', \'' + item.v_title + '\', \'' + item.v_cont + '\', \'' + selectedDate + '\', \'' + timeDisplay + '\')">수정</button>'
-                           + '    <button type="button" class="btn-delete" onclick="deleteSchedule(\'' + item.v_schedule_id + '\', \'' + selectedDate + '\')">삭제</button>'
+                           + '    <button type="button" class="btn-edit" onclick="openEditModal(\'' + item.vscheduleId + '\', \'' + item.vtitle + '\', \'' + item.vcont + '\', \'' + selectedDate + '\', \'' + timeDisplay + '\')">수정</button>'
+                           + '    <button type="button" class="btn-delete" onclick="deleteSchedule(\'' + item.vscheduleId + '\', \'' + selectedDate + '\')">삭제</button>'
                            + '  </div>'
                            + '</li>';
                 $listContainer.append(html);
@@ -231,7 +255,7 @@
          * @param {string} searchDate - "2026-01-19" 형식
          */
         async function fetchDaySchedule(searchDate) {
-            console.log(searchDate + " 의 데이터를 불러오는 중...");
+            console.log('fetchDaySchedule' + searchDate + " 의 데이터를 불러오는 중...");
 
             // 2. 데이터 조회 (Select)
             const start = searchDate + 'T00:00:00';
@@ -239,19 +263,42 @@
 
             // console.log("요청 범위:", start, "~", end);
 
-            const { data, error } = await supabaseClient
-                .from('schedule_mst')
-                .select('*')
-                .gte('d_target_dtm', start) // '2026-01-19T00:00:00'
-                .lte('d_target_dtm', end)   // '2026-01-19T23:59:59'
-                .order('d_target_dtm', { ascending: true });
-
-            if (error) {
-                console.error("데이터 가져오기 에러:", error.message);
-                alert("일정을 불러오는 데 실패했습니다.");
-                return;
+            var formData = {
+                  selType      : 'day'
+                , selectedDate : searchDate
             }
-            console.log('data : ',data);
+
+            $.ajax({
+                url: '/calendar/selectScheduleMstAjax', // 클래스 경로(/calendar) 포함 확인!
+                type: 'GET',
+                data: formData, // JSON이 아닌 일반 파라미터 형태로 전송
+                success: function(res) {
+                    console.log('res : ',res);
+                    if(res.status === "success") {
+                        // 이 데이터를 FullCalendar에 뿌려주면 됩니다!
+                        renderScheduleList(res.scheduleList, searchDate);
+                    } else {
+                        alert(res.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("서버 통신 중 에러가 발생했습니다.");
+                }
+            });
+
+            // const { data, error } = await supabaseClient
+            //     .from('schedule_mst')
+            //     .select('*')
+            //     .gte('d_target_dtm', start) // '2026-01-19T00:00:00'
+            //     .lte('d_target_dtm', end)   // '2026-01-19T23:59:59'
+            //     .order('d_target_dtm', { ascending: true });
+            //
+            // if (error) {
+            //     console.error("데이터 가져오기 에러:", error.message);
+            //     alert("일정을 불러오는 데 실패했습니다.");
+            //     return;
+            // }
+            // console.log('data : ',data);
 
             // 3. 화면에 데이터 뿌리기 (어제 만든 UI 함수 호출)
             // renderScheduleList(data, searchDate);
@@ -432,12 +479,16 @@
 
                         // 1. 현재 캘린더의 모든 소스를 제거
                         calendar.removeAllEvents();
+
+                        // 오늘의 일정 세팅
+                        fetchDaySchedule(date);
+
                         // 이달의 일정 가져오기
                         const dateSplit = date.split('-');
                         fetchMonthSchedules(dateSplit[0], dateSplit[1]);
 
                         closeModal();
-                        fetchDaySchedule(date);
+
                     } else {
                         alert(res.message);
                     }
