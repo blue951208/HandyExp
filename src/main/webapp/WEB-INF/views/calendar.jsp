@@ -75,16 +75,7 @@
 
                     // 이달의 일정 가져오기
                     fetchMonthSchedules(year, month);
-                    <%--const eventData = [--%>
-                    <%--    <c:forEach var="item" items="${monthList}" varStatus="status">--%>
-                    <%--    {--%>
-                    <%--        v_schedule_id: "${item.VScheduleId}",--%>
-                    <%--        v_title: "${item.VTitle}",     // DTO 필드명에 맞춰 수정--%>
-                    <%--        d_target_dtm: "${item.DTargetDtm}" // 'YYYY-MM-DD' 형식 문자열--%>
-                    <%--    }${!status.last ? ',' : ''}--%>
-                    <%--    </c:forEach>--%>
-                    <%--];--%>
-                    <%--renderCalendarEvents(eventData);--%>
+
                 }
             });
             calendar.render();
@@ -95,24 +86,18 @@
             var xhr = new XMLHttpRequest();
             var url = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getAnniversaryInfo'; /*URL*/
             var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'6ec54fd113e0a9f4a2724329c54a2ab69991850e471f6c439187be18718db269'; /*Service Key*/
-            // queryParams += '&' + encodeURIComponent('pageNo') + '=' + encodeURIComponent('1'); /**/
-            // queryParams += '&' + encodeURIComponent('numOfRows') + '=' + encodeURIComponent('10'); /**/
-            queryParams += '&' + encodeURIComponent('solYear') + '=' + encodeURIComponent(selYear); /**/
-            queryParams += '&' + encodeURIComponent('solMonth') + '=' + encodeURIComponent(selMonth); /**/
+            queryParams += '&' + encodeURIComponent('solYear') + '=' + encodeURIComponent(selYear);
+            queryParams += '&' + encodeURIComponent('solMonth') + '=' + encodeURIComponent(selMonth);
             xhr.open('GET', url + queryParams);
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4) {
                     xmlString = this.responseText;
-                    // alert('Status: '+this.status+'nHeaders: '+JSON.stringify(this.getAllResponseHeaders())+'nBody: '+this.responseText);
 
                     if (xmlString != "") {
-                        // 2. DOMParser를 이용해 XML 파싱
                         const parser = new DOMParser();
                         const xmlDoc = parser.parseFromString(xmlString, "text/xml");
 
-                        // 3. <item> 태그들을 모두 찾음
                         const items = xmlDoc.getElementsByTagName("item");
-                        const eventList = [];
 
                         for (let i = 0; i < items.length; i++) {
                             const item = items[i];
@@ -157,14 +142,12 @@
             xhr.send('');
         }
 
-        async function fetchMonthSchedules(year, month) {
+        function fetchMonthSchedules(year, month) {
             console.log('fetchMonthSchedules');
             const lastDay = new Date(year, month, 0).getDate();
 
-            // 시작일: 2026-01-01 00:00:00
-            // 종료일: 2026-01-31 23:59:59
+            // 대상 월: 2026-01
             const targetMonth = year + '-' + String(month).padStart(2, '0');
-            const endDate   = year + '-' + String(month).padStart(2, '0') + '-' + lastDay + ' 23:59:59';
 
             var formData = {
                   selType      : 'month'
@@ -172,13 +155,12 @@
             }
 
             $.ajax({
-                url: '/calendar/selectScheduleMstAjax', // 클래스 경로(/calendar) 포함 확인!
+                url: '/calendar/selectScheduleMstAjax',
                 type: 'GET',
-                data: formData, // JSON이 아닌 일반 파라미터 형태로 전송
+                data: formData,
                 success: function(res) {
                     console.log('res : ',res);
                     if(res.status === "success") {
-                        // 이 데이터를 FullCalendar에 뿌려주면 됩니다!
                         renderCalendarEvents(res.scheduleList);
                     } else {
                         alert(res.message);
@@ -188,40 +170,24 @@
                     alert("서버 통신 중 에러가 발생했습니다.");
                 }
             });
-
-            // const { data, error } = await supabaseClient
-            //     .from('schedule_mst')
-            //     .select('*')
-            //     .gte('d_target_dtm', startDate)
-            //     .lte('d_target_dtm', endDate)
-            //     .order('d_target_dtm', { ascending: true });
-            //
-            // console.log('fetchMonthSchedules data : ',data);
-            //
-            // if (error) {
-            //     console.error("월간 조회 실패:", error);
-            // } else {
-            //     // 이 데이터를 FullCalendar에 뿌려주면 됩니다!
-            //     renderCalendarEvents(data);
-            // }
         }
 
         function renderCalendarEvents(data) {
             data.forEach(item => {
                 calendar.addEvent({
                     id: item.vscheduleId,
-                    title: item.vtitle,      // 날짜 칸에 보일 텍스트
-                    start: item.dtargetDtm, // YYYY-MM-DD 형식 포함 시 자동 배치
-                    allDay: true,             // 시간 정보 무시하고 칸 전체에 표시할지 여부
-                    backgroundColor: '#3788d8', // 일정 색상 커스텀
+                    title: item.vtitle,
+                    start: item.dtargetDtm,
+                    allDay: true,
+                    backgroundColor: '#3788d8',
                     borderColor: '#3788d8'
                 });
             });
         }
 
         function renderScheduleList(data, selectedDate) {
-            const $listContainer = $('#todo-list'); // 어제 만든 리스트 태그
-            $listContainer.empty(); // 기존 리스트 비우기
+            const $listContainer = $('#todo-list');
+            $listContainer.empty();
 
             if (!data || data.length === 0) {
                 $listContainer.append('<li class="no-data">등록된 일정이 없습니다.</li>');
@@ -250,18 +216,7 @@
             });
         }
 
-        /**
-         * 특정 날짜의 일정을 Supabase에서 가져오는 함수
-         * @param {string} searchDate - "2026-01-19" 형식
-         */
-        async function fetchDaySchedule(searchDate) {
-            console.log('fetchDaySchedule' + searchDate + " 의 데이터를 불러오는 중...");
-
-            // 2. 데이터 조회 (Select)
-            const start = searchDate + 'T00:00:00';
-            const end   = searchDate + 'T23:59:59';
-
-            // console.log("요청 범위:", start, "~", end);
+        function fetchDaySchedule(searchDate) {
 
             var formData = {
                   selType      : 'day'
@@ -269,11 +224,10 @@
             }
 
             $.ajax({
-                url: '/calendar/selectScheduleMstAjax', // 클래스 경로(/calendar) 포함 확인!
+                url: '/calendar/selectScheduleMstAjax',
                 type: 'GET',
-                data: formData, // JSON이 아닌 일반 파라미터 형태로 전송
+                data: formData,
                 success: function(res) {
-                    console.log('res : ',res);
                     if(res.status === "success") {
                         // 이 데이터를 FullCalendar에 뿌려주면 됩니다!
                         renderScheduleList(res.scheduleList, searchDate);
@@ -285,23 +239,6 @@
                     alert("서버 통신 중 에러가 발생했습니다.");
                 }
             });
-
-            // const { data, error } = await supabaseClient
-            //     .from('schedule_mst')
-            //     .select('*')
-            //     .gte('d_target_dtm', start) // '2026-01-19T00:00:00'
-            //     .lte('d_target_dtm', end)   // '2026-01-19T23:59:59'
-            //     .order('d_target_dtm', { ascending: true });
-            //
-            // if (error) {
-            //     console.error("데이터 가져오기 에러:", error.message);
-            //     alert("일정을 불러오는 데 실패했습니다.");
-            //     return;
-            // }
-            // console.log('data : ',data);
-
-            // 3. 화면에 데이터 뿌리기 (어제 만든 UI 함수 호출)
-            // renderScheduleList(data, searchDate);
         }
 
         function formatDateTime(isoString) {
@@ -327,7 +264,7 @@
 
 
         // 신규 일정 등록
-        async function saveSchedule() {
+        function saveSchedule() {
             const title = $('#v_title').val();
             const content = $('#v_content').val();
             const date = $('#modalTargetDate').val(); // 예: "2026-01-20"
@@ -338,12 +275,8 @@
                 return;
             }
 
-            console.log('date : '+date + ' time : ' + time);
-
-            // 날짜와 시간을 합쳐서 timestamp 형식 생성
             const targetDtm = date + ' ' + time + ':00';
 
-            // 저장 버튼 비활성화 (중복 클릭 방지)
             $('.btn-save').prop('disabled', true).text('저장 중...');
 
             var formData = {
@@ -353,21 +286,23 @@
             }
 
             $.ajax({
-                url: '/calendar/insertScheduleMst', // 클래스 경로(/calendar) 포함 확인!
+                url: '/calendar/insertScheduleMst',
                 type: 'POST',
-                data: formData, // JSON이 아닌 일반 파라미터 형태로 전송
+                data: formData,
                 success: function(res) {
                     if(res.status === "success") {
                         alert(res.message);
+
                         // 1. 현재 캘린더의 모든 소스를 제거
                         calendar.removeAllEvents();
                         // 이달의 일정 가져오기
                         const dateSplit = date.split('-');
                         fetchMonthSchedules(dateSplit[0], dateSplit[1]);
 
-                        closeModal();
-                        // 리스트 새로고침
+                        // 오늘의 일정 가져오기
                         fetchDaySchedule(date);
+
+                        closeModal();
                     } else {
                         alert(res.message);
                     }
@@ -377,44 +312,27 @@
                 }
             });
 
-            // const { data, error } = await supabaseClient
-            //     .from('schedule_mst')
-            //     .insert([
-            //         {
-            //             v_title      : title
-            //           , v_cont       : content
-            //           , d_target_dtm : targetDtm
-            //         }
-            //     ]);
-            //
-            // if (error) {
-            //     console.error("저장 실패:", error.message);
-            //     alert("저장에 실패했습니다: " + error.message);
-            //     $('.btn-save').prop('disabled', false).text('저장하기');
-            // } else {
-            //     alert("일정이 등록되었습니다.");
-            //     closeModal();
-            //     // 리스트 새로고침
-            //     fetchDaySchedule(date);
-            // }
         }
 
-        async function deleteSchedule(id, selectedDate) {
+        function deleteSchedule(id, selectedDate) {
             if (!confirm("이 일정을 정말 삭제하시겠습니까?")) return;
 
             $.ajax({
                 url: '/calendar/deleteScheduleMst',
                 type: 'POST',
-                data: { scheduleId: id }, // Key 이름을 컨트롤러와 맞춰주세요!
+                data: { scheduleId: id },
                 success: function(res) {
                     if(res.status === "success") {
                         alert("삭제되었습니다.");
                         // 1. 현재 캘린더의 모든 소스를 제거
                         calendar.removeAllEvents();
+
                         // 이달의 일정 가져오기
                         const dateSplit = selectedDate.split('-');
                         fetchMonthSchedules(dateSplit[0], dateSplit[1]);
-                        fetchDaySchedule(selectedDate); // 리스트 새로고침
+
+                        // 오늘의 일정 가져오기
+                        fetchDaySchedule(selectedDate);
                     } else {
                         alert(res.message);
                     }
@@ -425,17 +343,6 @@
 
             });
 
-            // const { error } = await supabaseClient
-            //     .from('schedule_mst')
-            //     .delete()
-            //     .eq('v_schedule_id', id); // 고유 ID로 매칭
-            //
-            // if (error) {
-            //     alert("삭제에 실패했습니다: " + error.message);
-            // } else {
-            //     alert("삭제되었습니다.");
-            //     fetchDaySchedule(selectedDate); // 리스트 새로고침
-            // }
         }
 
         // 수정을 위한 모달 열기
@@ -446,17 +353,15 @@
             $('#modalTargetDate').val(date);
             $('#v_time').val(time);
 
-            // 저장 버튼의 onclick 속성을 수정 함수로 변경하거나, id를 hidden에 보관
-            $('#modalScheduleId').val(id); // 수정용 hidden input 하나 추가 필요
+            $('#modalScheduleId').val(id);
 
-            // 저장 버튼 텍스트 변경
             $('.btn-save').attr('onclick', 'updateSchedule()').text('수정 완료');
 
             $('#scheduleModal').fadeIn(200);
         }
 
         // 실제 수정 요청
-        async function updateSchedule() {
+        function updateSchedule() {
             const id = $('#modalScheduleId').val();
             const title = $('#v_title').val();
             const content = $('#v_content').val();
@@ -499,29 +404,19 @@
 
             });
 
-            // const { error } = await supabaseClient
-            //     .from('schedule_mst')
-            //     .update({ v_cont: content, v_title: title, d_target_dtm: targetDtm })
-            //     .eq('v_schedule_id', id);
-            //
-            // if (error) {
-            //     alert("수정에 실패했습니다.");
-            // } else {
-            //     alert("수정되었습니다.");
-            //     closeModal();
-            //     fetchDaySchedule(date);
-            // }
         }
 
     </script>
 </head>
 <body>
-    달력
+    <h2>달력</h2>
     <div class="main-container">
+        <%-- 달력 --%>
         <div id="calendar-wrapper">
             <div id="calendar"></div>
         </div>
 
+        <%-- 오늘의 일정 --%>
         <div id="todo-wrapper">
             <div class="todo-header">
                 <div class="header-side">
@@ -539,6 +434,7 @@
                 </div>
             </div>
             <hr>
+
             <ul id="todo-list">
                 <c:choose>
                     <c:when test="${not empty dayList}">
@@ -569,6 +465,7 @@
         </div>
     </div>
 
+    <%-- 일정 등록 모달 --%>
     <div id="scheduleModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
