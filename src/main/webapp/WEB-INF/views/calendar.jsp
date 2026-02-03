@@ -47,7 +47,6 @@
                     // 2. [추천] 날짜 객체(Date)에서 직접 추출하는 방법
                     // currentStart는 해당 뷰의 시작 날짜를 의미합니다.
                     var start = info.view.currentStart;
-                    console.log('start : ',start);
 
                     var year = start.getFullYear(); // 연도 (2026)
                     var month = (start.getMonth() + 1).toString().padStart(2, '0'); // 월 (01)
@@ -58,7 +57,7 @@
                     // 이번달인 경우 오늘 날짜로 세팅,그 외 월이 변경되는 경우 매월 1일로 세팅
                     var targetDt = '';
                     if (tYear == year && tMonth == month) {
-                        targetDt = year + '-' + month + '-' + today.getDate();
+                        targetDt = year + '-' + month + '-' + today.getDate().toString().padStart(2, '0');
                     } else {
                         targetDt = year + '-' + month + '-' + '01'
                     }
@@ -106,7 +105,6 @@
                             const dateName = item.getElementsByTagName("dateName")[0].textContent;
                             const isHoliday = item.getElementsByTagName("isHoliday")[0].textContent;
                             const locdate = item.getElementsByTagName("locdate")[0].textContent; // "20190228"
-                            // console.log('locdate : '+locdate+'dateName : '+dateName+'isHoliday : '+isHoliday);
 
                             // 날짜 포맷 변환: "20190228" -> "2019-02-28"
                             const formattedYear = locdate.substring(0, 4);
@@ -143,7 +141,6 @@
         }
 
         function fetchMonthSchedules(year, month) {
-            console.log('fetchMonthSchedules');
             const lastDay = new Date(year, month, 0).getDate();
 
             // 대상 월: 2026-01
@@ -159,7 +156,6 @@
                 type: 'GET',
                 data: formData,
                 success: function(res) {
-                    console.log('res : ',res);
                     if(res.status === "success") {
                         renderCalendarEvents(res.scheduleList);
                     } else {
@@ -229,7 +225,6 @@
                 data: formData,
                 success: function(res) {
                     if(res.status === "success") {
-                        // 이 데이터를 FullCalendar에 뿌려주면 됩니다!
                         renderScheduleList(res.scheduleList, searchDate);
                     } else {
                         alert(res.message);
@@ -436,31 +431,6 @@
             <hr>
 
             <ul id="todo-list">
-                <c:choose>
-                    <c:when test="${not empty dayList}">
-                        <c:forEach items="${dayList}" var="day">
-                            ${day}
-                            <li class="schedule-item" data-id="${day.VScheduleId}">
-                                <div class="schedule-info-wrapper">
-                                    <div class="schedule-header">
-                                        <span class="time-badge">${fn:substring(day.DTargetDtm, 11, 16)}</span>
-                                        <span class="schedule-title">${day.VTitle}</span>
-                                    </div>
-                                    <div class="schedule-body">
-                                        <p class="schedule-content">${day.VCont}</p>
-                                    </div>
-                                </div>
-                                <div class="schedule-btns">
-                                    <button type="button" class="btn-edit" onclick="openEditModal('${day.VScheduleId}', '${day.VTitle}', '${day.VCont}', '${fn:substring(day.DTargetDtm, 0, 10)}', '${fn:substring(day.DTargetDtm, 11, 16)}')">수정</button>
-                                    <button type="button" class="btn-delete" onclick="deleteSchedule('${day.VScheduleId}', '${fn:substring(day.DTargetDtm, 0, 10)}')">삭제</button>
-                                </div>
-                            </li>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <li>등록된 일정이 없습니다.</li>
-                    </c:otherwise>
-                </c:choose>
             </ul>
         </div>
     </div>
