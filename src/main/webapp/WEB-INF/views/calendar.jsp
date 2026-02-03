@@ -30,6 +30,11 @@
             // 달력 로드
             var calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
+                headerToolbar: {
+                    left: '', // 우리가 직접 만든 버튼이 들어갈 자리이므로 비워둠
+                    center: 'title',
+                    right: 'today prev,next'
+                },
                 initialView: 'dayGridMonth',
                 locale: 'ko', // 핵심: 한국어로 설정
                 dayMaxEvents: true,      // 해당 날짜 칸을 넘어가면 "+N 더보기"로 표시
@@ -51,6 +56,9 @@
                     var year = start.getFullYear(); // 연도 (2026)
                     var month = (start.getMonth() + 1).toString().padStart(2, '0'); // 월 (01)
 
+                    $("#selYear").val(year);
+                    $("#selMonth").val(month);
+
                     var today = new Date();
                     var tYear = today.getFullYear();
                     var tMonth = (today.getMonth() + 1).toString().padStart(2, '0');
@@ -66,9 +74,6 @@
                     // 기존 이벤트 제거 (필요 시)
                     calendar.removeAllEvents();
 
-                    // 💡 여기서 공공데이터 API를 호출하는 함수를 실행하세요!
-                    getAnniversaryInfo(year,month);
-
                     // 오늘의 일정 가져오기
                     fetchDaySchedule(targetDt);
 
@@ -80,10 +85,33 @@
             calendar.render();
         });
 
-        function getAnniversaryInfo(selYear, selMonth) {
+        /**
+         * 기념일,공휴일,국경일 등등 정보 가져오기
+         * @param type
+         */
+        function getOfficialDayInfo(type) {
+        // function getAnniversaryInfo(selYear, selMonth, type) {
             let xmlString = "";
             var xhr = new XMLHttpRequest();
-            var url = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getAnniversaryInfo'; /*URL*/
+
+            let selYear = $("#selYear").val();
+            let selMonth = $("#selMonth").val();
+
+            const operationMap = {
+                  'holiday'     : 'getHoliDeInfo'      // 공휴일
+                , 'national'    : 'getRestDeInfo'      // 국경일
+                , 'anniversary' : 'getAnniversaryInfo' // 기념일
+                , '24Divisions' : 'get24DivisionsInfo' // 24절기
+                , 'sundryDay'   : 'getSundryDayInfo'   // 잡절
+            };
+
+            const operation = operationMap[type];
+            if (!operation) {
+                console.error("지원하지 않는 요청 타입입니다: " + type);
+                return;
+            }
+
+            var url = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/' + operation; /*URL*/
             var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'6ec54fd113e0a9f4a2724329c54a2ab69991850e471f6c439187be18718db269'; /*Service Key*/
             queryParams += '&' + encodeURIComponent('solYear') + '=' + encodeURIComponent(selYear);
             queryParams += '&' + encodeURIComponent('solMonth') + '=' + encodeURIComponent(selMonth);
@@ -408,6 +436,17 @@
     <div class="main-container">
         <%-- 달력 --%>
         <div id="calendar-wrapper">
+            <input type="hidden" name="selYear" id="selYear" value="">
+            <input type="hidden" name="selMonth" id="selMonth" value="">
+            <div class="calendar-header-controls">
+                <div class="api-button-group">
+                    <button type="button" class="btn-api holiday"     onclick="getOfficialDayInfo('holiday')">공휴일</button>
+                    <button type="button" class="btn-api national"    onclick="getOfficialDayInfo('national')">국경일</button>
+                    <button type="button" class="btn-api anniversary" onclick="getOfficialDayInfo('anniversary')">기념일</button>
+                    <button type="button" class="btn-api term"        onclick="getOfficialDayInfo('24Divisions')">24절기</button>
+                    <button type="button" class="btn-api my-event"    onclick="getOfficialDayInfo('sundryDay')">잡절</button>
+                </div>
+            </div>
             <div id="calendar"></div>
         </div>
 

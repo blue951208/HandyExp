@@ -212,3 +212,60 @@
     font-size: 0.7rem !important;
     font-weight: bold;
 }
+
+#calendar-wrapper {
+    position: relative;
+    margin-top: 20px;
+}
+
+/* 버튼 그룹을 달력 왼쪽 상단에 배치 */
+.calendar-header-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    height: 40px; /* FullCalendar 헤더 높이와 맞춤 */
+    display: flex;
+    align-items: center;
+}
+
+.api-button-group {
+    display: flex;
+    gap: 5px;
+}
+
+/* 버튼 기본 스타일 */
+.btn-api {
+    padding: 5px 12px;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* 캡처 이미지처럼 각 버튼 왼쪽 컬러 포인트 */
+.btn-api.holiday { border-left: 4px solid #ff4d4d; }
+.btn-api.national { border-left: 4px solid #0052cc; }
+.btn-api.anniversary { border-left: 4px solid #28a745; }
+.btn-api.term { border-left: 4px solid #9ca3af; }
+.btn-api.my-event { border-left: 4px solid #3788d8; }
+
+.btn-api:hover {
+    background-color: #f3f4f6;
+}
+
+/* FullCalendar 내부 타이틀 여백 조정 */
+/* 버튼 그룹이 들어갈 공간만큼 타이틀을 오른쪽으로 밀어줍니다 */
+.fc .fc-toolbar-title {
+    margin-left: 360px !important; /* 버튼 그룹 너비에 따라 조절 */
+    font-size: 1.25em !important;
+}
+
+/* 헤더 툴바의 전체적인 정렬 */
+.fc .fc-toolbar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5em !important;
+}
