@@ -111,61 +111,77 @@
                 return;
             }
 
-            var url = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/' + operation; /*URL*/
-            var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'6ec54fd113e0a9f4a2724329c54a2ab69991850e471f6c439187be18718db269'; /*Service Key*/
-            queryParams += '&' + encodeURIComponent('solYear') + '=' + encodeURIComponent(selYear);
-            queryParams += '&' + encodeURIComponent('solMonth') + '=' + encodeURIComponent(selMonth);
-            xhr.open('GET', url + queryParams);
-            xhr.onreadystatechange = function () {
-                if (this.readyState == 4) {
-                    xmlString = this.responseText;
+            const isActive = $('.btn-api.' + type).hasClass("isActive");
+            if (isActive) {
+                // 이미 활성화된 상태이면 비활성화 처리
+                $('.btn-api.' + type).removeClass("isActive");
+                const allEvents = calendar.getEvents();
+                allEvents.forEach(event => {
+                    if (event.extendedProps.type === type) {
+                        event.remove();
+                    }
+                });
 
-                    if (xmlString != "") {
-                        const parser = new DOMParser();
-                        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+            } else {
+                $('.btn-api.' + type).addClass("isActive");
 
-                        const items = xmlDoc.getElementsByTagName("item");
+                var url = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/' + operation; /*URL*/
+                var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'6ec54fd113e0a9f4a2724329c54a2ab69991850e471f6c439187be18718db269'; /*Service Key*/
+                queryParams += '&' + encodeURIComponent('solYear') + '=' + encodeURIComponent(selYear);
+                queryParams += '&' + encodeURIComponent('solMonth') + '=' + encodeURIComponent(selMonth);
+                xhr.open('GET', url + queryParams);
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4) {
+                        xmlString = this.responseText;
 
-                        for (let i = 0; i < items.length; i++) {
-                            const item = items[i];
+                        if (xmlString != "") {
+                            const parser = new DOMParser();
+                            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
 
-                            // 값 추출
-                            const dateName = item.getElementsByTagName("dateName")[0].textContent;
-                            const isHoliday = item.getElementsByTagName("isHoliday")[0].textContent;
-                            const locdate = item.getElementsByTagName("locdate")[0].textContent; // "20190228"
+                            const items = xmlDoc.getElementsByTagName("item");
 
-                            // 날짜 포맷 변환: "20190228" -> "2019-02-28"
-                            const formattedYear = locdate.substring(0, 4);
-                            const formattedMonth = locdate.substring(4, 6);
-                            const formattedDay = locdate.substring(6, 8);
+                            for (let i = 0; i < items.length; i++) {
+                                const item = items[i];
 
-                            const formattedDate = formattedYear + '-' + formattedMonth + '-' + formattedDay;
+                                // 값 추출
+                                const dateName = item.getElementsByTagName("dateName")[0].textContent;
+                                const isHoliday = item.getElementsByTagName("isHoliday")[0].textContent;
+                                const locdate = item.getElementsByTagName("locdate")[0].textContent; // "20190228"
 
-                            // 3. FullCalendar 이벤트로 추가
-                            calendar.addEvent({
-                                id: 'holiday-' + locdate, // 중복 방지용 ID
-                                title: dateName,
-                                start: formattedDate,
-                                allDay: true,
+                                // 날짜 포맷 변환: "20190228" -> "2019-02-28"
+                                const formattedYear = locdate.substring(0, 4);
+                                const formattedMonth = locdate.substring(4, 6);
+                                const formattedDay = locdate.substring(6, 8);
 
-                                // 공휴일 전용 스타일 설정
-                                backgroundColor: 'transparent', // 배경은 투명하게 (글자만 보이게)
-                                borderColor: 'transparent',
-                                textColor: '#e91e63',           // 휴일은 핑크/레드 계열
-                                className: 'holiday-event',     // CSS 제어를 위한 클래스 추가
+                                const formattedDate = formattedYear + '-' + formattedMonth + '-' + formattedDay;
 
-                                // 커스텀 데이터 (필요 시)
-                                extendedProps: {
-                                    isHoliday: isHoliday
-                                }
-                            });
+                                // 3. FullCalendar 이벤트로 추가
+                                calendar.addEvent({
+                                    id: 'holiday-' + locdate, // 중복 방지용 ID
+                                    title: dateName,
+                                    start: formattedDate,
+                                    allDay: true,
 
+                                    // 공휴일 전용 스타일 설정
+                                    backgroundColor: 'transparent', // 배경은 투명하게 (글자만 보이게)
+                                    borderColor: 'transparent',
+                                    textColor: '#e91e63',           // 휴일은 핑크/레드 계열
+                                    className: 'holiday-event',     // CSS 제어를 위한 클래스 추가
+
+                                    // 커스텀 데이터 (필요 시)
+                                    extendedProps: {
+                                        isHoliday : isHoliday /* 휴일여부 */
+                                        , type      : type      /* 타입 */
+                                    }
+                                });
+
+                            }
                         }
                     }
-                }
-            };
+                };
 
-            xhr.send('');
+                xhr.send('');
+            }
         }
 
         function fetchMonthSchedules(year, month) {

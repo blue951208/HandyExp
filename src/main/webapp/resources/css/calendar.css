@@ -249,8 +249,8 @@
 .btn-api.holiday { border-left: 4px solid #ff4d4d; }
 .btn-api.national { border-left: 4px solid #0052cc; }
 .btn-api.anniversary { border-left: 4px solid #28a745; }
-.btn-api.term { border-left: 4px solid #9ca3af; }
-.btn-api.my-event { border-left: 4px solid #3788d8; }
+.btn-api.divisions { border-left: 4px solid #9ca3af; }
+.btn-api.sundryDay { border-left: 4px solid #3788d8; }
 
 .btn-api:hover {
     background-color: #f3f4f6;
