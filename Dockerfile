@@ -1,15 +1,16 @@
-# 1. 자바 11이 포함된 톰캣 9 이미지를 가져옵니다.
-FROM tomcat:9.0-jdk17-openjdk-slim
+# 1단계: 빌드 스테이지 (Gradle을 이용해 WAR 파일 생성)
+FROM gradle:7.6-jdk17 AS build
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+# Gradle 빌드 실행 (테스트 생략으로 속도 향상)
+RUN gradle clean build -x test
 
-# 2. 톰캣 기본 웹앱을 삭제하고 내 프로젝트를 ROOT로 설정합니다.
+# 2단계: 실행 스테이지 (톰캣에 빌드된 WAR 복사)
+FROM tomcat:9.0-jdk17-openjdk-slim
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# 3. 빌드된 war 파일을 톰캣의 ROOT.war로 복사합니다.
-# 이렇게 하면 접속 주소가 localhost:8888/ 이 됩니다.
-COPY build/libs/*.war /usr/local/tomcat/webapps/ROOT.war
+# 1단계에서 생성된 war 파일을 가져옵니다.
+COPY --from=build /home/gradle/src/build/libs/*.war /usr/local/tomcat/webapps/ROOT.war
 
-# 4. 8080 포트를 사용합니다.
 EXPOSE 8080
-
-# 5. 톰캣 실행
 CMD ["catalina.sh", "run"]
