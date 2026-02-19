@@ -21,6 +21,12 @@ public class ScheduleMst {
     @Column(name = "d_target_dtm")
     private LocalDateTime dTargetDtm;
 
+    @Column(name = "d_target_sdtm")
+    private LocalDateTime dTargetSdtm;
+
+    @Column(name = "d_target_edtm")
+    private LocalDateTime dTargetEdtm;
+
     @Column(name = "v_target_group")
     private String vTargetGroup;
 
