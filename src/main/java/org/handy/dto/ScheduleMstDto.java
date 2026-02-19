@@ -6,12 +6,7 @@ import lombok.Data;
 public class ScheduleMstDto {
     private String vScheduleId;
     private String vCategoryId;
-
     private String dTargetDtm;
-
-    private String dTargetSdtm;
-    private String dTargetEdtm;
-
     private String vTargetGroup;
     private String vCont;
     private String vPrivateYn;
