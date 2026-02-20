@@ -47,5 +47,4 @@ git_toolbox_prj.xml
 .idea/artifacts/
 
 ## application properties
-src/main/resources/application.properties
-src/main/resources/application-*.properties
+src/main/resources/application-local.properties
