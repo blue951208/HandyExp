@@ -39,7 +39,9 @@ public class ScheduleMstServiceImpl implements ScheduleMstService {
         entity.setVTitle(dto.getVTitle());
         entity.setVCont(dto.getVCont());
 
-        entity.setDTargetDtm(formatDateTime(dto.getDTargetDtm()));
+//        entity.setDTargetDtm(formatDateTime(dto.getDTargetDtm()));
+        entity.setDTargetSdtm(formatDateTime(dto.getDTargetSdtm()));
+        entity.setDTargetEdtm(formatDateTime(dto.getDTargetEdtm()));
         entity.setVFlagDel("N");
 
         // 2. 레포지토리의 save() 메서드 호출 끝! (SQL을 직접 안 써도 됩니다)
@@ -56,7 +58,9 @@ public class ScheduleMstServiceImpl implements ScheduleMstService {
         // 2. 객체의 값 변경 (Setter 사용)
         entity.setVTitle(dto.getVTitle());
         entity.setVCont(dto.getVCont());
-        entity.setDTargetDtm(formatDateTime(dto.getDTargetDtm()));
+//        entity.setDTargetDtm(formatDateTime(dto.getDTargetDtm()));
+        entity.setDTargetSdtm(formatDateTime(dto.getDTargetSdtm()));
+        entity.setDTargetEdtm(formatDateTime(dto.getDTargetEdtm()));
 
         scheduleMstRepository.save(entity);
     }
