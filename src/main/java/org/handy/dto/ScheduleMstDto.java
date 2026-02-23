@@ -11,6 +11,9 @@ public class ScheduleMstDto {
     private String dTargetSdtm;
     private String dTargetEdtm;
 
+    private String dTargetEdt;
+    private String dTargetSdt;
+
     private String vTargetGroup;
     private String vCont;
     private String vPrivateYn;

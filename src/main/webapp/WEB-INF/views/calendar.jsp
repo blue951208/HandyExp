@@ -207,10 +207,16 @@
 
         function renderCalendarEvents(data) {
             data.forEach(item => {
+                let endDate;
+                if (item.dtargetEdt) {
+                    endDate = new Date(item.dtargetEdt);
+                    endDate.setDate(endDate.getDate() + 1); // 하루를 더해줌
+                }
                 calendar.addEvent({
                     id: item.vscheduleId,
                     title: item.vtitle,
-                    start: item.dtargetSdtm,
+                    start: item.dtargetSdt,
+                    end: endDate,
                     allDay: true,
                     backgroundColor: '#3788d8',
                     borderColor: '#3788d8'
