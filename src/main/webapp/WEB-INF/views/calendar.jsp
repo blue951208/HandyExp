@@ -391,12 +391,33 @@
         // 수정을 위한 모달 열기
         function openEditModal(id, title, content, date, time) {
             $('#modalTitle').text(date + " 일정 수정");
-            $('#v_title').val(title);
-            $('#v_content').val(content);
-            $('#modalTargetDate').val(date);
-            $('#v_time').val(time);
-
             $('#modalScheduleId').val(id);
+
+            var formData = {
+                selType      : 'detail'
+              , vScheduleId : id
+            }
+
+            $.ajax({
+                url: '/calendar/selectScheduleMstAjax',
+                type: 'GET',
+                data: formData,
+                success: function(res) {
+                    if(res.status === "success") {
+                        const schedule = res.scheduleList[0];
+                        $('#v_title').val(schedule.vtitle);
+                        $('#v_content').val(schedule.vcont);
+                        $('#modalTargetDate').val(date);
+                        $('#startDt').val(schedule.dtargetSdtm);
+                        $('#endDt').val(schedule.dtargetEdtm);
+                    } else {
+                        alert(res.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("서버 통신 중 에러가 발생했습니다.");
+                }
+            });
 
             $('.btn-save').attr('onclick', 'updateSchedule()').text('수정 완료');
 

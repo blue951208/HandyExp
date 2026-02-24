@@ -22,6 +22,9 @@
                 <when test="selType == 'day' and selectedDate != null and selectedDate != ''">
                     AND #{selectedDate}::timestamp between d_target_sdtm::date and d_target_edtm::date
                 </when>
+                <when test="selType == 'detail'">
+                    AND v_schedule_id = #{vScheduleId}
+                </when>
             </choose>
         </if>
          ORDER BY d_target_sdtm DESC
