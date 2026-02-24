@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -25,6 +26,20 @@ public class ScheduleMstServiceImpl implements ScheduleMstService {
 
     @Override
     public List<ScheduleMstDto> selectScheduleMstList(Map<String, Object> param) {
+        // selType 이 month 인 경우 selectedDate 에 해당하는 월에 첫번째 마지막 일을 가져와서 세팅
+        if ("month".equals(param.getOrDefault("selType", ""))
+            && param.get("selectedDate") != null) {
+            String selectedDate = (String) param.get("selectedDate");
+            String[] parts = selectedDate.split("-");
+
+            if (parts.length == 2) {
+                LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt("01"));
+                LocalDate firstDayOfMonth = date.withDayOfMonth(1);
+                LocalDate lastDayOfMonth = date.withDayOfMonth(date.lengthOfMonth());
+                param.put("firstDayOfMonth", firstDayOfMonth.toString());
+                param.put("lastDayOfMonth" , lastDayOfMonth.toString());
+            }
+        }
         return scheduleMstMapper.selectScheduleMstList(param);
     }
 

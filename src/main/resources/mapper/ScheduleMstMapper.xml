@@ -15,11 +15,12 @@
          WHERE v_flag_del = 'N'
         <if test="selType != null and selType != ''">
             <choose>
-                <when test="selType == 'month' and selectedDate != null and selectedDate != ''">
-                    AND TO_CHAR(d_target_sdtm, 'YYYY-MM') = #{selectedDate}
+                <when test="selType == 'month' and firstDayOfMonth != null and firstDayOfMonth != '' and lastDayOfMonth != null and lastDayOfMonth != ''">
+                    AND <![CDATA[d_target_edtm >= #{firstDayOfMonth}::timestamp]]>
+                    AND <![CDATA[d_target_sdtm <= #{lastDayOfMonth}::timestamp]]>
                 </when>
                 <when test="selType == 'day' and selectedDate != null and selectedDate != ''">
-                    AND TO_CHAR(d_target_sdtm, 'YYYY-MM-DD') = #{selectedDate}
+                    AND #{selectedDate}::timestamp between d_target_sdtm::date and d_target_edtm::date
                 </when>
             </choose>
         </if>
