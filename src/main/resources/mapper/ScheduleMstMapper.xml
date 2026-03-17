@@ -16,8 +16,8 @@
         <if test="selType != null and selType != ''">
             <choose>
                 <when test="selType == 'month' and firstDayOfMonth != null and firstDayOfMonth != '' and lastDayOfMonth != null and lastDayOfMonth != ''">
-                    AND <![CDATA[d_target_edtm >= #{firstDayOfMonth}::timestamp]]>
-                    AND <![CDATA[d_target_sdtm <= #{lastDayOfMonth}::timestamp]]>
+                    AND <![CDATA[d_target_edtm >= (#{firstDayOfMonth}||' 00:00:00')::timestamp]]>
+                    AND <![CDATA[d_target_sdtm <= (#{lastDayOfMonth} ||' 23:59:59')::timestamp]]>
                 </when>
                 <when test="selType == 'day' and selectedDate != null and selectedDate != ''">
                     AND #{selectedDate}::timestamp between d_target_sdtm::date and d_target_edtm::date
