@@ -18,9 +18,6 @@ public class ScheduleMst {
     @Column(name = "v_category_id")
     private String vCategoryId;
 
-    @Column(name = "d_target_dtm")
-    private LocalDateTime dTargetDtm;
-
     @Column(name = "d_target_sdtm")
     private LocalDateTime dTargetSdtm;
 

@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="/resources/css/calendar.css">
     <%-- jQuery --%>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-    <%-- 지도 --%>
-    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=l3zon4bsqx"></script>
     <%-- 달력 --%>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/ko.global.min.js"></script>
@@ -207,10 +205,16 @@
 
         function renderCalendarEvents(data) {
             data.forEach(item => {
+                let endDate;
+                if (item.dtargetEdt) {
+                    endDate = new Date(item.dtargetEdt);
+                    endDate.setDate(endDate.getDate() + 1); // 하루를 더해줌
+                }
                 calendar.addEvent({
                     id: item.vscheduleId,
                     title: item.vtitle,
-                    start: item.dtargetDtm,
+                    start: item.dtargetSdt,
+                    end: endDate,
                     allDay: true,
                     backgroundColor: '#3788d8',
                     borderColor: '#3788d8'
@@ -229,11 +233,11 @@
 
             // 데이터 반복문 처리
             data.forEach(item => {
-                var timeDisplay = item.dtargetDtm ? item.dtargetDtm.substring(11, 16) : '--:--';
+                var timeDisplay = item.dtargetSdtm ? item.dtargetSdtm.substring(11, 16) : '--:--';
                 const html = '<li class="schedule-item" data-id="'+ item.vscheduleId + '">'
                            + '  <div class="schedule-info-wrapper">'
                            + '    <div class="schedule-header">'
-                           + '      <span class="time-badge">' + formatDateTime(item.dtargetDtm) + '</span>'
+                           + '      <span class="time-badge">' + formatDateTime(item.dtargetSdtm) + '</span>'
                            + '      <span class="schedule-title">' + (item.vtitle || '제목 없음') + '</span>'
                            + '    </div>'
                            + '    <div class="schedule-body">'
@@ -284,7 +288,7 @@
         // 모달 열기
         function openModal(selectedDate) {
             $('#modalTargetDate').val(selectedDate); // 클릭된 날짜 저장
-            $('#modalTitle').text(selectedDate + ' 새로운 일정');
+            $('#modalTitle').text(selectedDate + ' 신규 일정');
             $('#scheduleModal').show();
         }
 
@@ -299,22 +303,29 @@
         function saveSchedule() {
             const title = $('#v_title').val();
             const content = $('#v_content').val();
-            const date = $('#modalTargetDate').val(); // 예: "2026-01-20"
-            const time = $('#v_time').val();         // 예: "14:30"
+            const startDt = $('#startDt').val(); // 2026-02-24T18:09
+            const endDt   = $('#endDt').val();
 
             if (!content) {
                 alert("내용을 입력해주세요.");
                 return;
             }
 
-            const targetDtm = date + ' ' + time + ':00';
+            if (!startDt || !endDt) {
+                alert("시작 일시와 종료 일시를 모두 입력해주세요.");
+                return;
+            }
+
+            const startDtm = startDt.split("T")[0] + ' ' + startDt.split("T")[1] + ':00';
+            const endDtm   = endDt.split("T")[0] + ' ' + endDt.split("T")[1] + ':00';
 
             $('.btn-save').prop('disabled', true).text('저장 중...');
 
             var formData = {
                   vTitle     : title
                 , vCont      : content
-                , dTargetDtm : targetDtm
+                , dTargetSdtm : startDtm
+                , dTargetEdtm : endDtm
             }
 
             $.ajax({
@@ -380,12 +391,33 @@
         // 수정을 위한 모달 열기
         function openEditModal(id, title, content, date, time) {
             $('#modalTitle').text(date + " 일정 수정");
-            $('#v_title').val(title);
-            $('#v_content').val(content);
-            $('#modalTargetDate').val(date);
-            $('#v_time').val(time);
-
             $('#modalScheduleId').val(id);
+
+            var formData = {
+                selType      : 'detail'
+              , vScheduleId : id
+            }
+
+            $.ajax({
+                url: '/calendar/selectScheduleMstAjax',
+                type: 'GET',
+                data: formData,
+                success: function(res) {
+                    if(res.status === "success") {
+                        const schedule = res.scheduleList[0];
+                        $('#v_title').val(schedule.vtitle);
+                        $('#v_content').val(schedule.vcont);
+                        $('#modalTargetDate').val(date);
+                        $('#startDt').val(schedule.dtargetSdtm);
+                        $('#endDt').val(schedule.dtargetEdtm);
+                    } else {
+                        alert(res.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("서버 통신 중 에러가 발생했습니다.");
+                }
+            });
 
             $('.btn-save').attr('onclick', 'updateSchedule()').text('수정 완료');
 
@@ -397,9 +429,17 @@
             const id = $('#modalScheduleId').val();
             const title = $('#v_title').val();
             const content = $('#v_content').val();
-            const date = $('#modalTargetDate').val();
-            const time = $('#v_time').val();
-            const targetDtm = date + ' ' + time + ':00';
+
+            const startDt = $('#startDt').val(); // 2026-02-24T18:09
+            const endDt   = $('#endDt').val();
+
+            if (!startDt || !endDt) {
+                alert("시작 일시와 종료 일시를 모두 입력해주세요.");
+                return;
+            }
+
+            const startDtm = startDt.split("T")[0] + ' ' + startDt.split("T")[1] + ':00';
+            const endDtm   = endDt.split("T")[0] + ' ' + endDt.split("T")[1] + ':00';
 
             $.ajax({
                 url: '/calendar/updateScheduleMst',
@@ -408,7 +448,8 @@
                     vScheduleId: id
                   , vCont: content
                   , vTitle: title
-                  , dTargetDtm: targetDtm
+                  , dTargetSdtm : startDtm
+                  , dTargetEdtm : endDtm
                 },
                 success: function(res) {
                     if(res.status === "success") {
@@ -442,7 +483,6 @@
 </head>
 <body>
     <h2>달력</h2>
-    <%= System.getProperty("spring.profiles.active") %>
     <div class="main-container">
         <%-- 달력 --%>
         <div id="calendar-wrapper">
@@ -503,9 +543,19 @@
                     <textarea id="v_content" rows="4" placeholder="일정 상세 내용을 입력하세요"></textarea>
                 </div>
 
+<%--                <div class="form-group">--%>
+<%--                    <label>시간 (HH:mm)</label>--%>
+<%--                    <input type="time" id="v_time" value="09:00">--%>
+<%--                </div>--%>
+
                 <div class="form-group">
-                    <label>시간 (HH:mm)</label>
-                    <input type="time" id="v_time" value="09:00">
+                    <label>시작 일시</label>
+                    <input type="datetime-local" id="startDt">
+                </div>
+
+                <div class="form-group">
+                    <label>종료 일시</label>
+                    <input type="datetime-local" id="endDt">
                 </div>
 
                 <div class="modal-footer">
