@@ -245,7 +245,8 @@
                            + '    </div>'
                            + '  </div>'
                            + '  <div class="schedule-btns">'
-                           + '    <button type="button" class="btn-edit" onclick="openEditModal(\'' + item.vscheduleId + '\', \'' + item.vtitle + '\', \'' + item.vcont + '\', \'' + selectedDate + '\', \'' + timeDisplay + '\')">수정</button>'
+                           // + '    <button type="button" class="btn-edit" onclick="openEditModal(\'' + item.vscheduleId + '\', \'' + item.vtitle + '\', \'' + item.vcont + '\', \'' + selectedDate + '\', \'' + timeDisplay + '\')">수정</button>'
+                           + '    <button type="button" class="btn-edit" onclick="openEditModal(\'' + item.vscheduleId + '\', \'' + selectedDate + '\')">수정</button>'
                            + '    <button type="button" class="btn-delete" onclick="deleteSchedule(\'' + item.vscheduleId + '\', \'' + selectedDate + '\')">삭제</button>'
                            + '  </div>'
                            + '</li>';
@@ -338,12 +339,17 @@
 
                         // 1. 현재 캘린더의 모든 소스를 제거
                         calendar.removeAllEvents();
-                        // 이달의 일정 가져오기
-                        const dateSplit = date.split('-');
-                        fetchMonthSchedules(dateSplit[0], dateSplit[1]);
 
-                        // 오늘의 일정 가져오기
-                        fetchDaySchedule(date);
+                        const targetDate = $('#modalTargetDate').val();
+
+                        if (targetDate) {
+                            const dateSplit = targetDate.split('-');
+                            // 이달의 일정 가져오기
+                            fetchMonthSchedules(dateSplit[0], dateSplit[1]);
+
+                            // 오늘의 일정 가져오기
+                            fetchDaySchedule(targetDate);
+                        }
 
                         closeModal();
                     } else {
@@ -389,13 +395,14 @@
         }
 
         // 수정을 위한 모달 열기
-        function openEditModal(id, title, content, date, time) {
-            $('#modalTitle').text(date + " 일정 수정");
+        // function openEditModal(id, title, content, date, time) {
+        function openEditModal(id, selDate) {
+            $('#modalTitle').text(selDate + " 일정 수정");
             $('#modalScheduleId').val(id);
 
             var formData = {
                 selType      : 'detail'
-              , vScheduleId : id
+                , vScheduleId : id
             }
 
             $.ajax({
@@ -407,7 +414,7 @@
                         const schedule = res.scheduleList[0];
                         $('#v_title').val(schedule.vtitle);
                         $('#v_content').val(schedule.vcont);
-                        $('#modalTargetDate').val(date);
+                        $('#modalTargetDate').val(selDate);
                         $('#startDt').val(schedule.dtargetSdtm);
                         $('#endDt').val(schedule.dtargetEdtm);
                     } else {
@@ -458,12 +465,15 @@
                         // 1. 현재 캘린더의 모든 소스를 제거
                         calendar.removeAllEvents();
 
-                        // 오늘의 일정 세팅
-                        fetchDaySchedule(date);
+                        const targetDate = $('#modalTargetDate').val();
+                        if (targetDate) {
+                            // 오늘의 일정 세팅
+                            fetchDaySchedule(targetDate);
 
-                        // 이달의 일정 가져오기
-                        const dateSplit = date.split('-');
-                        fetchMonthSchedules(dateSplit[0], dateSplit[1]);
+                            // 이달의 일정 가져오기
+                            const dateSplit = targetDate.split('-');
+                            fetchMonthSchedules(dateSplit[0], dateSplit[1]);
+                        }
 
                         closeModal();
 
