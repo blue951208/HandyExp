@@ -11,5 +11,11 @@
     <div>
         <a href="/calendar">달력</a>
     </div>
+
+    <h2>파일 업로드</h2>
+    <form action="/file/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" />
+        <button type="submit">업로드</button>
+    </form>
 </body>
 </html>
