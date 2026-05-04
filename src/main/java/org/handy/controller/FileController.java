@@ -20,14 +20,17 @@ public class FileController {
     @ResponseBody
     public String upload(@RequestParam("file") MultipartFile file) {
         System.out.println("file : "+file);
-
+        String result = "";
         try {
-            String result = fileService.uploadFile(file, "image");
+            result = fileService.uploadFile(file, "image");
         } catch (Exception e) {
             System.out.println("파일 업로드 중 에러 발생: " + e.getMessage());
         }
 
+        if (!file.isEmpty() && result != null && !"".equals(result)) {
+//            fileService.insertFileMst();
+        }
 
-        return "파일 업로드 기능은 아직 구현되지 않았습니다.";
+        return result;
     }
 }

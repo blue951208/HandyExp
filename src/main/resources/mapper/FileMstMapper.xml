@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.handy.mapper.FileMstMapper">
+
+    <insert id="insertFileMst" parameterType="org.handy.dto.FileMstDto">
+        INSERT INTO FILE_MST (
+           V_FILE_NM
+         , V_PATH
+         , V_BUCKET_NM
+         , V_CONTENT_TYPE
+         , V_FLAG_DEL
+         , D_REG_DTM
+         , D_UPDATE_DTM
+        ) VALUES (
+           #{vFileNm}
+         , #{vPath}
+         , #{vBucketNm}
+         , #{vContentType}
+         , 'N'
+         , NOW()
+         , NOW()
+        )
+    </insert>
+
+</mapper>
