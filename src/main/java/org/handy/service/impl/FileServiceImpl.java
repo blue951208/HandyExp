@@ -10,6 +10,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Service
 public class FileServiceImpl implements FileService {
@@ -22,7 +25,16 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String uploadFile(MultipartFile file, String bucketNm) {
-        String fileName = file.getOriginalFilename();
+        if (file == null || file.isEmpty()) {
+            return "업로드할 파일이 없습니다.";
+        }
+
+        String originalFileName = file.getOriginalFilename();
+        if (originalFileName == null) {
+            return "파일 이름을 가져올 수 없습니다.";
+        }
+
+        String fileName = generateFileName(originalFileName);
         // 1. 요청 URL 생성 (버킷명/파일명)
         String url = PROJECT_URL + "/storage/v1/object/" + bucketNm + "/" + fileName;
 
@@ -51,10 +63,11 @@ public class FileServiceImpl implements FileService {
                 try {
                     FileMstDto fileMstDto = new FileMstDto();
                     fileMstDto.setVFileNm(fileName);
+                    fileMstDto.setVOriginFileNm(originalFileName);
                     fileMstDto.setVPath("/storage/v1/object/public");
                     fileMstDto.setVBucketNm(bucketNm);
                     fileMstDto.setVContentType(file.getContentType());
-                    insertFileMst(fileMstDto);
+                    fileMstMapper.insertFileMst(fileMstDto);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return "파일 정보 저장 중 에러 발생: " + e.getMessage();
@@ -75,8 +88,17 @@ public class FileServiceImpl implements FileService {
 
     }
 
-    private void insertFileMst(FileMstDto fileMstDto) {
-        fileMstMapper.insertFileMst(fileMstDto);
-    }
+    private String generateFileName(String originalFileName) {
+        // 현재 시간
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
+        // 2. 랜덤 텍스트
+        String randomText = UUID.randomUUID().toString().substring(0, 8);
+
+        // 3. 확장자
+        String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+
+        // 4. 최종 파일명 조합 (예: 20260512_143005_a1b2c3d4.jpg)
+        return timestamp + "_" + randomText + extension;
+    }
 }

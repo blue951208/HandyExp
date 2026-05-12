@@ -21,6 +21,14 @@ public class FileController {
     public String upload(@RequestParam("file") MultipartFile file) {
         System.out.println("file : "+file);
         String result = "";
+
+        String contentType = file.getContentType(); // 예: image/png, image/jpeg
+
+        // image 파일 체크
+        if (contentType == null || !contentType.startsWith("image/")) {
+            return "잘못된 파일 형식입니다. 이미지 파일만 업로드하세요.";
+        }
+
         try {
             result = fileService.uploadFile(file, "image");
         } catch (Exception e) {

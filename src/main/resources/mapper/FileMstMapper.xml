@@ -6,6 +6,7 @@
     <insert id="insertFileMst" parameterType="org.handy.dto.FileMstDto">
         INSERT INTO FILE_MST (
            V_FILE_NM
+         , V_ORIGIN_FILE_NM
          , V_PATH
          , V_BUCKET_NM
          , V_CONTENT_TYPE
@@ -14,6 +15,7 @@
          , D_UPDATE_DTM
         ) VALUES (
            #{vFileNm}
+         , #{vOriginFileNm}
          , #{vPath}
          , #{vBucketNm}
          , #{vContentType}
